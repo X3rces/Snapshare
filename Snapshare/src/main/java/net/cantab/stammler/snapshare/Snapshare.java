@@ -70,7 +70,7 @@ public class Snapshare implements IXposedHookLoadPackage {
     public static final boolean TIMBER = false;
 
     /** what version is snapchat? */
-    public static int SNAPCHAT_VERSION = Obfuscator.FIVE_ZERO_TWO;
+    public static int SNAPCHAT_VERSION = Obfuscator.FIVE_ZERO_TWENTYTHREE;
 
     /** Adjustment methods */
     private int adjustMethod;
@@ -121,6 +121,10 @@ public class Snapshare implements IXposedHookLoadPackage {
         }
         if(version >= 298) {
             SNAPCHAT_VERSION = Obfuscator.FIVE_ZERO_NINE;
+        }
+        if(version >= 323) {
+            SNAPCHAT_VERSION = Obfuscator.FIVE_ZERO_TWENTYTHREE;
+            XposedBridge.log("USING 323 HOOKS");
         }
 
 
