@@ -35,7 +35,5 @@ public class SettingsActivity extends Activity {
         super.onCreate(savedInstanceState);
         getFragmentManager().beginTransaction().replace(android.R.id.content, new Settings()).commit();
         PreferenceManager.setDefaultValues(this, R.xml.prefs, false);
-
     }
-
 }

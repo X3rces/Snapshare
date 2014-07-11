@@ -26,14 +26,20 @@ a gazillion times. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 public enum Obfuscator {
-    CAMERA_LOAD (new String[] {"refreshFlashButton", "k", "l", "e", "e", "p", "q", "q"}), // com.snapchat.android.camera.Camera(Preview)Fragment
-    GET_BUS (new String[] {"getInstance", "a", "a", "a", "a", "a", "a", "a"}), // com.snapchat.android.util.eventbus.BusProvider
-    BUS_POST (new String[] {"post", "c", "c", "c", "c", "a", "a", "a"}), // com.squareup.otto.Bus
-    M_SNAP_C_EVENT (new String[] {"mSnapCapturedEvent", "w", "w", "v", "v", "u", "u", "u"}), //com.snapchat.android.SnapPreviewFragment
-   // M_VIDEO_URI (new String[] {"mVideoUri", "c", "c", "mVideoUri"}), // com.snapchat.android.SnapPreviewFragment, No longer used
-    ON_BACK_PRESS (new String[] {"onDelegatedBackPress", "m", "m", "c", "o" ,"l", "l", "q"}), // com.snapchat.android.SnapPreviewFragment
-    BUILDER_CONSTRUCTOR (new String[] {"a", "a", "a", "a", "a", "a", "a", "a"}), // com.snapchat.android.model.Snapbryo.Builder
-    CREATE_SNAPBRYO (new String[] {"a", "a", "a", "a", "a", "a", "a", "a"}); //com.snapchat.android.model.Snapbryo.Builder
+    // com.snapchat.android.camera.Camera(Preview)Fragment
+    CAMERA_LOAD (new String[] {"refreshFlashButton", "k", "l", "e", "e", "p", "q", "q"}),
+    // com.snapchat.android.util.eventbus.BusProvider
+    GET_BUS (new String[] {"getInstance", "a", "a", "a", "a", "a", "a", "a"}),
+    // com.squareup.otto.Bus
+    BUS_POST (new String[] {"post", "c", "c", "c", "c", "a", "a", "a"}),
+    //com.snapchat.android.SnapPreviewFragment
+    M_SNAP_C_EVENT (new String[] {"mSnapCapturedEvent", "w", "w", "v", "v", "u", "u", "u"}),
+    // com.snapchat.android.SnapPreviewFragment
+    ON_BACK_PRESS (new String[] {"onDelegatedBackPress", "m", "m", "c", "o" ,"l", "l", "q"}),
+    // com.snapchat.android.model.Snapbryo.Builder
+    BUILDER_CONSTRUCTOR (new String[] {"a", "a", "a", "a", "a", "a", "a", "a"}),
+    //com.snapchat.android.model.Snapbryo.Builder
+    CREATE_SNAPBRYO (new String[] {"a", "a", "a", "a", "a", "a", "a", "a"});
 
     public static final int FOUR_20 = 0;
     public static final int FOUR_21 = 1;

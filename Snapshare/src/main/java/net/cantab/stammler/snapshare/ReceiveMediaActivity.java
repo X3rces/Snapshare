@@ -28,7 +28,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 
-import static net.cantab.stammler.snapshare.Snapshare.LOG_TAG;
+import com.p1ngu1n.snapshare.Commons;
 
 /**
  * This Activity has an intent-filter to receive images and videos.
@@ -51,12 +51,10 @@ public class ReceiveMediaActivity extends Activity {
         Uri mediaUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
         if (type != null && Intent.ACTION_SEND.equals(action) && (type.startsWith("image/") || type.startsWith("video/"))) {
             if (mediaUri == null) {
-                Log.d(LOG_TAG, "Media URI null!");
+                Log.d(Commons.LOG_TAG, "Media URI null!");
                 return;
             }
-            Log.d(LOG_TAG, "Received Media share of type " + type
-                    + "\nand URI " + mediaUri.toString()
-                    + "\nCalling hooked Snapchat with same Intent.");
+            Log.d(Commons.LOG_TAG, "Received Media share of type " + type + "\nand URI " + mediaUri.toString() + "\nCalling hooked Snapchat with same Intent.");
             intent.setComponent(ComponentName.unflattenFromString("com.snapchat.android/.LandingPageActivity"));
             startActivity(intent);
         }
