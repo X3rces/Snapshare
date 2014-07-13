@@ -41,6 +41,10 @@ public class Settings extends PreferenceFragment implements OnSharedPreferenceCh
         updateSummary("pref_key_adjustment");
     }
 
+    /**
+     * Set the selected value as summary for a fragment
+     * @param key the preference's key
+     */
     private void updateSummary(String key) {
         if(findPreference(key) instanceof ListPreference) {
             ListPreference lp = (ListPreference)findPreference(key);
@@ -48,11 +52,10 @@ public class Settings extends PreferenceFragment implements OnSharedPreferenceCh
         }
     }
     @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
-            String key) {
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         updateSummary(key);
-
     }
+
     @Override
     public void onResume() {
         super.onResume();

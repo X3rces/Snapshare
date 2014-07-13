@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.cantab.stammler.snapshare"
     android:versionCode="15"
-    android:versionName="1.7.0 beta" >
+    android:versionName="1.7.0 beta 1" >
 
     <uses-sdk
         android:minSdkVersion="15"
@@ -11,6 +11,7 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name" >
+
         <meta-data
             android:name="xposedmodule"
             android:value="true" />
@@ -19,29 +20,26 @@
             android:value="2.0*" />
         <meta-data
             android:name="xposeddescription"
-            android:value="Lets you share arbitrary images and videos via Snapchat." />
+            android:value="@string/xposed_description" />
 
         <activity
             android:name=".ReceiveMediaActivity"
             android:theme="@android:style/Theme.NoDisplay" >
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
-
                 <category android:name="android.intent.category.DEFAULT" />
-
                 <data android:mimeType="image/*" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
-
                 <category android:name="android.intent.category.DEFAULT" />
-
                 <data android:mimeType="video/mp4" />
             </intent-filter>
         </activity>
+
         <activity
             android:name="com.amcgavin.snapshare.SettingsActivity"
-            android:label="Snapshare Settings" >
+            android:label="@string/snapshare_settings" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

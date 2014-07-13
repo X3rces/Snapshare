@@ -69,10 +69,6 @@ public class Snapshare implements IXposedHookLoadPackage {
     /** Snapchat's version */
     public static int SNAPCHAT_VERSION;
 
-    /** Only if a video file path contains this pattern, Snapchat is allowed to delete the video,
-     * because then it is a video file recored by Snapchat itself and not a shared one. */
-     public static final String VIDEO_CACHE_PATTERN = "/com.snapchat.android/cache/sending_video_snaps/snapchat_video";
-
     /** After calling initSnapPreviewFragment() below, we set the
      * initializedUri to the current media's Uri to prevent another call of onCreate() to initialize
      * the media again. E.g. onCreate() is called again if the phone is rotated. */
@@ -136,6 +132,7 @@ public class Snapshare implements IXposedHookLoadPackage {
                 String type = intent.getType();
                 String action = intent.getAction();
                 XposedBridge.log(Commons.LOG_TAG +  "intent type: " + type + ", intent action:" + action);
+
                 // Check if this is a normal launch of Snapchat or actually called by Snapshare
                 if (type != null && Intent.ACTION_SEND.equals(action)) {
                     Uri mediaUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
@@ -150,34 +147,26 @@ public class Snapshare implements IXposedHookLoadPackage {
                         XposedBridge.log(Commons.LOG_TAG +  "Media already initialized, exit onCreate() hook");
                         return;
                     }
+
                     ContentResolver thizContentResolver = (ContentResolver) callSuperMethod(thiz, "getContentResolver");
                     if (type.startsWith("image/")) {
-
-                        //InputStream iStream;
                         try {
-                            /*iStream = getContentResolver().openInputStream(mediaUri);
-                         oStream = new ByteArrayOutputStream(iStream.available());
-                         XposedBridge.log("Snapshare", "iStream.available(): " + iStream.available());
-                         int byteSize = IOUtils.copy(iStream, oStream);
-                         Log.v("Snapshare", "Image size: " + byteSize/1024 + " kB");*/
-                            /*TODO use BitmapFactory with inSampleSize magic to avoid using too much memory,
-                         see http://developer.android.com/training/displaying-bitmaps/load-bitmap.html#load-bitmap */
+                            /* TODO: use BitmapFactory with inSampleSize magic to avoid using too much memory,
+                             * see http://developer.android.com/training/displaying-bitmaps/load-bitmap.html#load-bitmap */
                             Bitmap bitmap = MediaStore.Images.Media.getBitmap(thizContentResolver, mediaUri);
                             int width = bitmap.getWidth();
                             int height = bitmap.getHeight();
                             XposedBridge.log(Commons.LOG_TAG +  "Original image w x h: " + width + " x " + height);
+
                             // Landscape images have to be rotated 90 degrees clockwise for Snapchat to be displayed correctly
-                            if (width > height) {
-                                // check if the user wants to rotate
-                                if(prefs.getBoolean("pref_key_rotate", true)) {
-                                    XposedBridge.log(Commons.LOG_TAG +  "Landscape image detected, rotating 90 degrees clockwise.");
-                                    Matrix matrix = new Matrix();
-                                    matrix.setRotate(90);
-                                    bitmap = createBitmap(bitmap, 0, 0, width, height, matrix, true);
-                                    // resetting width and height
-                                    width = bitmap.getWidth();
-                                    height = bitmap.getHeight();
-                                }
+                            if (width > height && prefs.getBoolean("pref_key_rotate", true)) {
+                                XposedBridge.log(Commons.LOG_TAG +  "Landscape image detected, rotating 90 degrees clockwise.");
+                                Matrix matrix = new Matrix();
+                                matrix.setRotate(90);
+                                bitmap = createBitmap(bitmap, 0, 0, width, height, matrix, true);
+                                // resetting width and height
+                                width = bitmap.getWidth();
+                                height = bitmap.getHeight();
                             }
 
                             /**
@@ -206,28 +195,29 @@ public class Snapshare implements IXposedHookLoadPackage {
                             }
                             if(adjustMethod == Commons.ADJUST_CROP) {
                                 /* If the image properly covers the Display rectangle, we mark it as a "large" image
-                            and are going to scale it down. We make this distinction because we don't wanna
-                            scale the image up if it is smaller than the Display rectangle. */
+                                 and are going to scale it down. We make this distinction because we don't wanna
+                                 scale the image up if it is smaller than the Display rectangle. */
                                 boolean largeImage = ((width > dWidth) & (height > dHeight));
                                 XposedBridge.log(Commons.LOG_TAG +  "Large image? " + largeImage);
+
                                 int imageToDisplayRatio = width * dHeight - height * dWidth;
                                 if (imageToDisplayRatio > 0) {
                                     // i.e., width/height > dWidth/dHeight, so have to crop from left and right:
                                     int newWidth = (dWidth * height / dHeight);
                                     XposedBridge.log(Commons.LOG_TAG +  "New width after cropping left & right: " + newWidth);
                                     bitmap = createBitmap(bitmap, (width - newWidth) / 2, 0, newWidth, height);
-
                                 } else if (imageToDisplayRatio < 0) {
                                     // i.e., width/height < dWidth/dHeight, so have to crop from top and bottom:
                                     int newHeight = (dHeight * width / dWidth);
                                     XposedBridge.log(Commons.LOG_TAG +  "New height after cropping top & bottom: " + newHeight);
                                     bitmap = createBitmap(bitmap, 0, (height - newHeight) / 2, width, newHeight);
                                 }
+
                                 if (largeImage) {
                                     XposedBridge.log(Commons.LOG_TAG +  "Scaling down.");
                                     bitmap = Bitmap.createScaledBitmap(bitmap, dWidth, dHeight, true);
                                 }
-                                /// Scaling and cropping finished, ready to let Snapchat display our result
+                                // Scaling and cropping finished, ready to let Snapchat display our result
                             }
                             else {
                                 // we are going to scale the image down and place a black background behind it
@@ -265,6 +255,7 @@ public class Snapshare implements IXposedHookLoadPackage {
                         // so we have to convert the URI
                         String [] proj = {MediaStore.Images.Media.DATA};
                         Cursor cursor = thizContentResolver.query(mediaUri, proj, null, null, null);
+
                         if (cursor != null) {
                             int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
                             cursor.moveToFirst();
@@ -303,24 +294,21 @@ public class Snapshare implements IXposedHookLoadPackage {
          * after the method is called, we call the eventbus to send a snapcapture event 
          * with our own media.
          */
+
         // new in 5.0.2: CameraFragment!
-        String cameraFragment;
-        if(SNAPCHAT_VERSION < Obfuscator.FIVE_ZERO_TWO)
-            cameraFragment = "CameraPreviewFragment";
-        else
-            cameraFragment = "CameraFragment";
-        findAndHookMethod("com.snapchat.android.camera."+cameraFragment, lpparam.classLoader, Obfuscator.CAMERA_LOAD.getValue(SNAPCHAT_VERSION), new XC_MethodHook() {
+        String cameraFragment = (SNAPCHAT_VERSION < Obfuscator.FIVE_ZERO_TWO ? "CameraPreviewFragment" : "CameraFragment");
+        findAndHookMethod("com.snapchat.android.camera." + cameraFragment, lpparam.classLoader, Obfuscator.CAMERA_LOAD.getValue(SNAPCHAT_VERSION), new XC_MethodHook() {
 
             @Override
-            protected void afterHookedMethod(MethodHookParam param)
-                    throws Throwable {
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 if(initializedUri == null) return; // We don't have an image to send, so don't try to send one
                 XposedBridge.log(Commons.LOG_TAG + "ROLLINGOUT");
                 Object snapCaptureEvent;
+
+                // new stuff for 4.1.10: Class called Snapbryo (gross)
+                // this class now stores all the data for snaps. What's good for us is that we can continue using either a bitmap or a videouri in a method.
+                // SnapCapturedEvent(Snapbryo(Builder(Media)))
                 if(SNAPCHAT_VERSION >= Obfuscator.FOUR_ONE_TEN) {
-                    // new stuff for 4.1.10: Class called Snapbryo (gross)
-                    // this class now stores all the data for snaps. What's good for us is that we can continue using either a bitmap or a videouri in a method.
-                    // SnapCapturedEvent(Snapbryo(Builder(Media)))
                     Object builder = newInstance(findClass("com.snapchat.android.model.Snapbryo.Builder", lpparam.classLoader));
                     Object snapbryo = callMethod(callMethod(builder, Obfuscator.BUILDER_CONSTRUCTOR.getValue(SNAPCHAT_VERSION), media.getContent()),Obfuscator.CREATE_SNAPBRYO.getValue(SNAPCHAT_VERSION));
                     snapCaptureEvent = newInstance(SnapCapturedEventClass, snapbryo);
@@ -328,54 +316,29 @@ public class Snapshare implements IXposedHookLoadPackage {
                 else {
                     snapCaptureEvent = newInstance(SnapCapturedEventClass, media.getContent());
                 }
-                callMethod(callStaticMethod(findClass("com.snapchat.android.util.eventbus.BusProvider", lpparam.classLoader), Obfuscator.GET_BUS.getValue(SNAPCHAT_VERSION)),
+                callMethod(callStaticMethod(findClass("com.snapchat.android.util.eventbus.BusProvider", lpparam.classLoader),Obfuscator.GET_BUS.getValue(SNAPCHAT_VERSION)),
                         Obfuscator.BUS_POST.getValue(SNAPCHAT_VERSION), snapCaptureEvent);
 
                 initializedUri = null; // clean up after ourselves. If we don't do this snapchat will crash.
-
             }
         });
-        
 
-        /** The following two hooks prevent Snapchat from deleting videos shared with Snapshare.
-         * It does so by checking whether the path of the video file to be deleted contains the
-         * VIDEO_CACHE_PATTERN, which then would imply that the video file resides in the Snapchat
-         * cache and can thus be deleted. Otherwise, Snapchat is prevented from deleting the file.
-         *
-         * We could just copy the video into the temporary video cache of Snapchat and then don't
-         * care that Snapchat is deleting videos after sending them. I found it, however, more fancy
-         * to intercept all methods that delete the video files, in case we are sending our own video. ;)
-
-        findAndHookMethod("com.snapchat.android.model.SentSnap", lpparam.classLoader, "deleteBackingVideoFile", new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                String videoPath = (String) getObjectField(param.thisObject, "mSnapUriString");
-                String logMsg;
-                if (videoPath.contains(VIDEO_CACHE_PATTERN)) {
-                    logMsg = "SS#deleteBackingVideoFile> Allow Snapchat to delete own cached video file ";
-                } else {
-                    param.setResult(null);
-                    logMsg = "SS#deleteBackingVideoFile> Prevented Snapchat from deleting our video file ";
-                }
-                XposedBridge.log(Commons.LOG_TAG +  logMsg + videoPath);
-            }
-        });
-         */
 
         /**
          * Stop snapchat deleting our video when the view is cancelled.
          */
-
         findAndHookMethod("com.snapchat.android.SnapPreviewFragment", lpparam.classLoader, Obfuscator.ON_BACK_PRESS.getValue(SNAPCHAT_VERSION), new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 Object thiz = param.thisObject;
+                Uri tempFileUri = Uri.fromFile(File.createTempFile("delete", "me"));
+
                 Object event;
                 if(SNAPCHAT_VERSION < Obfuscator.FOUR_ONE_TEN) // make sure we dont delete video files on accident!
-                    event = newInstance(SnapCapturedEventClass, Uri.fromFile(File.createTempFile("delete", "me")));
+                    event = newInstance(SnapCapturedEventClass, tempFileUri);
                 else {
                     Object builder = newInstance(findClass("com.snapchat.android.model.Snapbryo.Builder", lpparam.classLoader));
-                    builder = callMethod(builder, Obfuscator.BUILDER_CONSTRUCTOR.getValue(SNAPCHAT_VERSION), Uri.fromFile(File.createTempFile("delete", "me")));
+                    builder = callMethod(builder, Obfuscator.BUILDER_CONSTRUCTOR.getValue(SNAPCHAT_VERSION), tempFileUri);
                     event = newInstance(findClass("com.snapchat.android.model.Snapbryo", lpparam.classLoader), builder);
                 }
 
@@ -383,10 +346,10 @@ public class Snapshare implements IXposedHookLoadPackage {
                 XposedBridge.log(Commons.LOG_TAG +  "prevented snapchat from deleting our video.");
             }
         });
-        
+
     }
 
-    /** 
+    /**
      * refreshes Preferences
      */
     private void refreshPrefs() {

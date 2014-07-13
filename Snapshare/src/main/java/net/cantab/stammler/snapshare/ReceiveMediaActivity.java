@@ -48,15 +48,15 @@ public class ReceiveMediaActivity extends Activity {
         Intent intent = getIntent();
         String action = intent.getAction();
         String type = intent.getType();
-        Uri mediaUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+
         if (type != null && Intent.ACTION_SEND.equals(action) && (type.startsWith("image/") || type.startsWith("video/"))) {
-            if (mediaUri == null) {
-                Log.d(Commons.LOG_TAG, "Media URI null!");
-                return;
+            Uri mediaUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+
+            if (mediaUri != null) {
+                Log.d(Commons.LOG_TAG, "Received Media share of type " + type + "\nand URI " + mediaUri.toString() + "\nCalling hooked Snapchat with same Intent.");
+                intent.setComponent(ComponentName.unflattenFromString("com.snapchat.android/.LandingPageActivity"));
+                startActivity(intent);
             }
-            Log.d(Commons.LOG_TAG, "Received Media share of type " + type + "\nand URI " + mediaUri.toString() + "\nCalling hooked Snapchat with same Intent.");
-            intent.setComponent(ComponentName.unflattenFromString("com.snapchat.android/.LandingPageActivity"));
-            startActivity(intent);
         }
         //call finish at the end to close the wrapper
         finish();

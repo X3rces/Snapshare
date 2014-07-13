@@ -32,13 +32,13 @@ public enum Obfuscator {
     GET_BUS (new String[] {"getInstance", "a", "a", "a", "a", "a", "a", "a"}),
     // com.squareup.otto.Bus
     BUS_POST (new String[] {"post", "c", "c", "c", "c", "a", "a", "a"}),
-    //com.snapchat.android.SnapPreviewFragment
+    // com.snapchat.android.SnapPreviewFragment
     M_SNAP_C_EVENT (new String[] {"mSnapCapturedEvent", "w", "w", "v", "v", "u", "u", "u"}),
     // com.snapchat.android.SnapPreviewFragment
     ON_BACK_PRESS (new String[] {"onDelegatedBackPress", "m", "m", "c", "o" ,"l", "l", "q"}),
     // com.snapchat.android.model.Snapbryo.Builder
     BUILDER_CONSTRUCTOR (new String[] {"a", "a", "a", "a", "a", "a", "a", "a"}),
-    //com.snapchat.android.model.Snapbryo.Builder
+    // com.snapchat.android.model.Snapbryo.Builder
     CREATE_SNAPBRYO (new String[] {"a", "a", "a", "a", "a", "a", "a", "a"});
 
     public static final int FOUR_20 = 0;

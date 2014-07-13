@@ -1,11 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
     <string name="app_name">Snapshare</string>
+    <string name="xposed_description">Lets you share arbitrary images and videos via Snapchat.</string>
+    <string name="snapshare_settings">Snapshare Settings</string>
+
     <string name="pref_general">Images</string>
     <string name="pref_rotate_title">Rotate Images</string>
     <string name="pref_rotate_on">Rotation enabled</string>
     <string name="pref_rotate_off">Rotation disabled</string>
 
+    <string name="pref_adjustment_title">Image Adjustment Method</string>
+    <string name="pref_adjustment_default">Crop</string>
     <string-array name="pref_adjustment_entries">
         <item>Crop</item>
         <item>Scale</item>
@@ -16,8 +22,5 @@
         <item>1</item>
         <item>2</item>
     </string-array>
-
-    <string name="pref_adjustment_title">Image Adjustment Method</string>
-    <string name="pref_adjustment_default">Crop</string>
 
 </resources>
