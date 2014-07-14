@@ -29,9 +29,6 @@ import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
-import android.widget.Toast;
-
-import de.robv.android.xposed.XposedBridge;
 
 /**
  * Class to hold all the preferences
@@ -63,7 +60,7 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
         }
     }
 
-    private Preference.OnPreferenceChangeListener launcherChangeListener = new Preference.OnPreferenceChangeListener() {
+    private final Preference.OnPreferenceChangeListener launcherChangeListener = new Preference.OnPreferenceChangeListener() {
 
         public boolean onPreferenceChange(Preference preference, Object newValue) {
             int state = ((Boolean) newValue ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED);

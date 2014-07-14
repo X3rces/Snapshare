@@ -42,6 +42,6 @@
     <string name="pref_launcher_off">Access settings through Xposed Installer</string>
 
     <string name="pref_debug_title">Debugging</string>
-    <string name="pref_debug_on">Debugging enabled</string>
-    <string name="pref_debug_off">Debugging disabled</string>
+    <string name="pref_debug_on">Debug information is shown in the Xposed Log</string>
+    <string name="pref_debug_off">Debug information is not shown in the Xposed Log</string>
 </resources>

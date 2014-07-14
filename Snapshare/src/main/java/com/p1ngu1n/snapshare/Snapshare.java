@@ -48,7 +48,6 @@ import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
-import static android.graphics.Bitmap.createBitmap;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static de.robv.android.xposed.XposedHelpers.findClass;
@@ -62,16 +61,16 @@ public class Snapshare implements IXposedHookLoadPackage {
     /** Preferred adjustment method */
     private static int ADJUST_METHOD;
     /** Debugging */
-    public static boolean DEBUGGING;
+    private static boolean DEBUGGING;
 
     /** Snapchat's version */
-    public static int SNAPCHAT_VERSION;
+    private static int SNAPCHAT_VERSION;
 
     /** After calling initSnapPreviewFragment() below, we set the
      * initializedUri to the current media's Uri to prevent another call of onCreate() to initialize
      * the media again. E.g. onCreate() is called again if the phone is rotated. */
     private Uri initializedUri;
-    private XSharedPreferences prefs = new XSharedPreferences("net.cantab.stammler.snapshare");
+    private XSharedPreferences prefs = new XSharedPreferences("com.p1ngu1n.snapshare");
 
     public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
         if (!lpparam.packageName.equals("com.snapchat.android"))
@@ -168,10 +167,10 @@ public class Snapshare implements IXposedHookLoadPackage {
 
                             // Landscape images have to be rotated 90 degrees clockwise for Snapchat to be displayed correctly
                             if (width > height && ROTATION_MODE != Commons.ROTATION_NONE) {
-                                xposedDebug("Landscape image detected, rotating image");
+                                xposedDebug("Landscape image detected, rotating image " + ROTATION_MODE + " degrees");
                                 Matrix matrix = new Matrix();
                                 matrix.setRotate(ROTATION_MODE);
-                                bitmap = createBitmap(bitmap, 0, 0, width, height, matrix, true);
+                                bitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
                                 // resetting width and height
                                 width = bitmap.getWidth();
                                 height = bitmap.getHeight();
@@ -208,12 +207,12 @@ public class Snapshare implements IXposedHookLoadPackage {
                                     // i.e., width/height > dWidth/dHeight, so have to crop from left and right:
                                     int newWidth = (dWidth * height / dHeight);
                                     xposedDebug("New width after cropping left and right: " + newWidth);
-                                    bitmap = createBitmap(bitmap, (width - newWidth) / 2, 0, newWidth, height);
+                                    bitmap = Bitmap.createBitmap(bitmap, (width - newWidth) / 2, 0, newWidth, height);
                                 } else if (imageToDisplayRatio < 0) {
                                     // i.e., width/height < dWidth/dHeight, so have to crop from top and bottom:
                                     int newHeight = (dHeight * width / dWidth);
                                     xposedDebug("New height after cropping top and bottom: " + newHeight);
-                                    bitmap = createBitmap(bitmap, 0, (height - newHeight) / 2, width, newHeight);
+                                    bitmap = Bitmap.createBitmap(bitmap, 0, (height - newHeight) / 2, width, newHeight);
                                 }
 
                                 /* If the image properly covers the Display rectangle, we mark it as a "large" image
