@@ -29,7 +29,6 @@ package com.p1ngu1n.snapshare;
 public class Commons {
     // Debugging settings
     public static final String LOG_TAG = "Snapshare: ";
-    public static final String SNAPSHARE_VERSION = "1.7.0 beta 1";
 
     // Adjustment methods
     public static final int ADJUST_CROP = 0;
