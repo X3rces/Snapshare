@@ -21,11 +21,19 @@ a gazillion times. If not, see <http://www.gnu.org/licenses/>.
  */
 
 import net.cantab.stammler.snapshare.R;
+
+import android.app.Activity;
+import android.content.ComponentName;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.ListPreference;
+import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.widget.Toast;
+
+import de.robv.android.xposed.XposedBridge;
 
 /**
  * Class to hold all the preferences
@@ -39,6 +47,9 @@ public class Settings extends PreferenceFragment implements OnSharedPreferenceCh
         getPreferenceManager().setSharedPreferencesMode(1);
         addPreferencesFromResource(R.xml.prefs);
 
+        Preference launcherPref = findPreference("pref_launcher");
+        launcherPref.setOnPreferenceChangeListener(launcherChangeListener);
+
         updateSummary("pref_adjustment");
         updateSummary("pref_rotation");
     }
@@ -49,10 +60,24 @@ public class Settings extends PreferenceFragment implements OnSharedPreferenceCh
      */
     private void updateSummary(String key) {
         if(findPreference(key) instanceof ListPreference) {
-            ListPreference lp = (ListPreference)findPreference(key);
+            ListPreference lp = (ListPreference) findPreference(key);
             lp.setSummary(lp.getEntry());
         }
     }
+
+    private Preference.OnPreferenceChangeListener launcherChangeListener = new Preference.OnPreferenceChangeListener() {
+
+        public boolean onPreferenceChange(Preference preference, Object newValue) {
+            int state = ((Boolean) newValue ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
+
+            Activity activity = getActivity();
+            ComponentName alias = new ComponentName(activity, "com.amcgavin.snapshare.SettingsActivity-Alias");
+            PackageManager p = activity.getPackageManager();
+            p.setComponentEnabledSetting(alias, state, PackageManager.DONT_KILL_APP);
+            return true;
+        }
+    };
+
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         updateSummary(key);

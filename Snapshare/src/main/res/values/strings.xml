@@ -36,6 +36,11 @@
 
     <!-- Other settings -->
     <string name="pref_other">Other</string>
+
+    <string name="pref_launcher_title">Show Snapshare icon in your launcher</string>
+    <string name="pref_launcher_on">Yes, access Settings through my launcher</string>
+    <string name="pref_launcher_off">No, access Settings through Xposed Installer</string>
+
     <string name="pref_debug_title">Debugging</string>
     <string name="pref_debug_on">Debugging enabled</string>
     <string name="pref_debug_off">Debugging disabled</string>

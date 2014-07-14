@@ -38,13 +38,25 @@
         </activity>
 
         <activity
-            android:name="com.amcgavin.snapshare.SettingsActivity"
-            android:label="@string/snapshare_settings" >
+            android:name="com.amcgavin.snapshare.SettingsActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="de.robv.android.xposed.category.MODULE_SETTINGS"/>
             </intent-filter>
         </activity>
+
+        <!-- Thanks to GermainZ for this alias-trick! -->
+        <activity-alias
+            android:enabled="true"
+            android:name="com.amcgavin.snapshare.SettingsActivity-Alias"
+            android:label="@string/snapshare_settings"
+            android:icon="@drawable/ic_launcher"
+            android:targetActivity="com.amcgavin.snapshare.SettingsActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
     </application>
 
 </manifest>
