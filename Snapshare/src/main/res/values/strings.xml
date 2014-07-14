@@ -2,7 +2,7 @@
 <resources>
 
     <string name="app_name">Snapshare</string>
-    <string name="xposed_description">Lets you share arbitrary images and videos via Snapchat.</string>
+    <string name="xposed_description">This Xposed module lets you share any image and portrait video via Snapchat right from the share menu.</string>
     <string name="snapshare_settings">Snapshare Settings</string>
 
     <!-- Image settings -->
