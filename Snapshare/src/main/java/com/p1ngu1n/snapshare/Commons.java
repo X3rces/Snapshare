@@ -35,4 +35,9 @@ public class Commons {
     public static final int ADJUST_CROP = 0;
     public static final int ADJUST_SCALE = 1;
     public static final int ADJUST_NONE = 2;
+
+    // Rotation modes
+    public static final int ROTATION_NONE = 0;
+    public static final int ROTATION_CW = 90;
+    public static final int ROTATION_CCW = 270;
 }

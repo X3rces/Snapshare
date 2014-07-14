@@ -38,7 +38,9 @@ public class Settings extends PreferenceFragment implements OnSharedPreferenceCh
         super.onCreate(savedInstanceState);
         getPreferenceManager().setSharedPreferencesMode(1);
         addPreferencesFromResource(R.xml.prefs);
-        updateSummary("pref_key_adjustment");
+
+        updateSummary("pref_adjustment");
+        updateSummary("pref_rotation");
     }
 
     /**

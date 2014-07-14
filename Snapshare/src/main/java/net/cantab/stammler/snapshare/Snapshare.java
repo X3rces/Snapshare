@@ -35,7 +35,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.WindowManager;
 
 import java.io.File;
@@ -58,16 +57,16 @@ import static de.robv.android.xposed.XposedHelpers.callMethod;
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.newInstance;
-import static de.robv.android.xposed.XposedHelpers.setStaticBooleanField;
 import static de.robv.android.xposed.XposedHelpers.callStaticMethod;
 import static de.robv.android.xposed.XposedHelpers.setObjectField;
 
 public class Snapshare implements IXposedHookLoadPackage {
+    /** Rotation mode */
+    private static int ROTATION_MODE;
     /** Preferred adjustment method */
-    private int adjustMethod;
-
+    private static int ADJUST_METHOD;
     /** Debugging */
-    public static boolean debugging;
+    public static boolean DEBUGGING;
 
     /** Snapchat's version */
     public static int SNAPCHAT_VERSION;
@@ -172,10 +171,10 @@ public class Snapshare implements IXposedHookLoadPackage {
                             xposedDebug("Image shared, size: " + width + " x " + height + " (w x h)");
 
                             // Landscape images have to be rotated 90 degrees clockwise for Snapchat to be displayed correctly
-                            if (width > height && prefs.getBoolean("pref_key_rotate", true)) {
-                                xposedDebug("Landscape image detected, rotating 90 degrees clockwise.");
+                            if (width > height && ROTATION_MODE != Commons.ROTATION_NONE) {
+                                xposedDebug("Landscape image detected, rotating image");
                                 Matrix matrix = new Matrix();
-                                matrix.setRotate(90);
+                                matrix.setRotate(ROTATION_MODE);
                                 bitmap = createBitmap(bitmap, 0, 0, width, height, matrix, true);
                                 // resetting width and height
                                 width = bitmap.getWidth();
@@ -207,7 +206,7 @@ public class Snapshare implements IXposedHookLoadPackage {
                                 dHeight = temp;
                             }
 
-                            if(adjustMethod == Commons.ADJUST_CROP) {
+                            if(ADJUST_METHOD == Commons.ADJUST_CROP) {
                                 int imageToDisplayRatio = width * dHeight - height * dWidth;
                                 if (imageToDisplayRatio > 0) {
                                     // i.e., width/height > dWidth/dHeight, so have to crop from left and right:
@@ -239,7 +238,7 @@ public class Snapshare implements IXposedHookLoadPackage {
                                 Matrix transform = new Matrix();
                                 float scale = dWidth / (float)width;
                                 float xTrans = 0;
-                                if(adjustMethod == Commons.ADJUST_NONE) {
+                                if(ADJUST_METHOD == Commons.ADJUST_NONE) {
                                     // Remove scaling and add some translation
                                     scale = 1;
                                     xTrans = dWidth/2 - width/2;
@@ -368,7 +367,7 @@ public class Snapshare implements IXposedHookLoadPackage {
      * @param prefix Whether it should be prefixed by the log-tag
      */
     private void xposedDebug(String message, boolean prefix) {
-        if (debugging) {
+        if (DEBUGGING) {
             if (prefix) {
                 message = Commons.LOG_TAG + message;
             }
@@ -390,8 +389,9 @@ public class Snapshare implements IXposedHookLoadPackage {
      */
     private void refreshPrefs() {
         prefs.reload();
-        adjustMethod = Integer.parseInt(prefs.getString("pref_key_adjustment", Integer.toString(Commons.ADJUST_CROP)));
-        debugging = prefs.getBoolean("pref_debug", false);
+        ROTATION_MODE = Integer.parseInt(prefs.getString("pref_rotation", Integer.toString(Commons.ROTATION_CW)));
+        ADJUST_METHOD = Integer.parseInt(prefs.getString("pref_adjustment", Integer.toString(Commons.ADJUST_CROP)));
+        DEBUGGING = prefs.getBoolean("pref_debug", false);
     }
 
     /** {@code XposedHelpers.callMethod()} cannot call methods of the super class of an object, because it
