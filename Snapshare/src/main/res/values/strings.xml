@@ -5,7 +5,8 @@
     <string name="xposed_description">Lets you share arbitrary images and videos via Snapchat.</string>
     <string name="snapshare_settings">Snapshare Settings</string>
 
-    <string name="pref_general">Images</string>
+    <!-- Image settings -->
+    <string name="pref_images">Images</string>
     <string name="pref_rotate_title">Rotate Images</string>
     <string name="pref_rotate_on">Rotation enabled</string>
     <string name="pref_rotate_off">Rotation disabled</string>
@@ -23,4 +24,9 @@
         <item>2</item>
     </string-array>
 
+    <!-- Other settings -->
+    <string name="pref_other">Other</string>
+    <string name="pref_debug_title">Debugging</string>
+    <string name="pref_debug_on">Debugging enabled</string>
+    <string name="pref_debug_off">Debugging disabled</string>
 </resources>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <PreferenceCategory android:title="@string/pref_general" >
+    <PreferenceCategory android:title="@string/pref_images">
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_key_rotate"
@@ -16,6 +16,15 @@
             android:entryValues="@array/pref_adjustment_values"
             android:key="pref_key_adjustment"
             android:title="@string/pref_adjustment_title" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_other">
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_debug"
+            android:summaryOff="@string/pref_debug_off"
+            android:summaryOn="@string/pref_debug_on"
+            android:title="@string/pref_debug_title" />
     </PreferenceCategory>
 
 </PreferenceScreen>
