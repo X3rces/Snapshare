@@ -1,4 +1,4 @@
-package com.amcgavin.snapshare;
+package com.p1ngu1n.snapshare;
 /**
 Obfuscator.java created on 12/12/13.
 

@@ -1,4 +1,4 @@
-package net.cantab.stammler.snapshare;
+package com.p1ngu1n.snapshare;
 
 /**
  Snapshare.java created on 6/26/13.
@@ -41,10 +41,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-
-import com.amcgavin.snapshare.Media;
-import com.amcgavin.snapshare.Obfuscator;
-import com.p1ngu1n.snapshare.Commons;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;

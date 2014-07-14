@@ -1,4 +1,4 @@
-package com.amcgavin.snapshare;
+package com.p1ngu1n.snapshare;
 /**
 SettingsActivity.java created on 22/12/13.
 
@@ -20,7 +20,6 @@ You should have received a copy of the GNU General Public License
 a gazillion times. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import net.cantab.stammler.snapshare.R;
 import android.app.Activity;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -33,7 +32,7 @@ public class SettingsActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getFragmentManager().beginTransaction().replace(android.R.id.content, new Settings()).commit();
+        getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingsFragment()).commit();
         PreferenceManager.setDefaultValues(this, R.xml.prefs, false);
     }
 }

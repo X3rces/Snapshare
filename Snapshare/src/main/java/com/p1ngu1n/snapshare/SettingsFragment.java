@@ -1,6 +1,6 @@
-package com.amcgavin.snapshare;
+package com.p1ngu1n.snapshare;
 /**
-Settings.java created on 22/12/13.
+SettingsFragment.java created on 22/12/13.
 
 Copyright (C) 2013 Alec McGavin <alec.mcgavin@gmail.com>
 
@@ -20,8 +20,6 @@ You should have received a copy of the GNU General Public License
 a gazillion times. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import net.cantab.stammler.snapshare.R;
-
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.SharedPreferences;
@@ -39,7 +37,7 @@ import de.robv.android.xposed.XposedBridge;
  * Class to hold all the preferences
  *
  */
-public class Settings extends PreferenceFragment implements OnSharedPreferenceChangeListener{
+public class SettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener{
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -71,7 +69,7 @@ public class Settings extends PreferenceFragment implements OnSharedPreferenceCh
             int state = ((Boolean) newValue ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
 
             Activity activity = getActivity();
-            ComponentName alias = new ComponentName(activity, "com.amcgavin.snapshare.SettingsActivity-Alias");
+            ComponentName alias = new ComponentName(activity, "com.p1ngu1n.snapshare.SettingsActivity-Alias");
             PackageManager p = activity.getPackageManager();
             p.setComponentEnabledSetting(alias, state, PackageManager.DONT_KILL_APP);
             return true;

@@ -1,4 +1,4 @@
-package net.cantab.stammler.snapshare;
+package com.p1ngu1n.snapshare;
 
 /**
  ReceiveMediaActivity.java created on 6/26/13.
