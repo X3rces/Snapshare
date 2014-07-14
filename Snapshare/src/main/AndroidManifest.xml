@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.p1ngu1n.snapshare"
-    android:versionCode="15"
-    android:versionName="2.0.0 beta 1" >
+    android:versionCode="16"
+    android:versionName="2.0.0" >
 
     <uses-sdk
         android:minSdkVersion="15"
