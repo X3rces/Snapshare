@@ -36,6 +36,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
+import android.webkit.URLUtil;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -81,7 +82,7 @@ public class Snapshare implements IXposedHookLoadPackage {
         /** thanks to KeepChat for the following snippet: **/
         int version;
         try {
-            xposedDebug("\n------------------- SNAPSHARE STARTED --------------------", false);
+            xposedDebug("----------------- SNAPSHARE HOOKED -----------------", false);
             Object activityThread = callStaticMethod(findClass("android.app.ActivityThread", null), "currentActivityThread");
             Context context = (Context) callMethod(activityThread, "getSystemContext");
             version = context.getPackageManager().getPackageInfo(lpparam.packageName, 0).versionCode;
@@ -133,6 +134,7 @@ public class Snapshare implements IXposedHookLoadPackage {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 refreshPrefs();
+                xposedDebug("----------------- SNAPSHARE STARTED -----------------", false);
                 Object thiz = param.thisObject;
                 // Get intent, action and MIME type
                 Intent intent = (Intent) callSuperMethod(thiz, "getIntent");
@@ -258,22 +260,29 @@ public class Snapshare implements IXposedHookLoadPackage {
                     }
                     else if (type.startsWith("video/")) {
                         // Snapchat expects the video URI to be in the file:// format, not content://
-                        // so we have to convert the URI
-                        String [] proj = {MediaStore.Images.Media.DATA};
-                        Cursor cursor = thizContentResolver.query(mediaUri, proj, null, null, null);
+                        if (URLUtil.isFileUrl(mediaUri.toString()))
+                        {
+                            media.setContent(mediaUri);
+                            xposedDebug("Already had File URI: " + mediaUri.toString());
+                        }
+                        // No file URI, so we have to convert it
+                        else {
+                            String [] proj = {MediaStore.Images.Media.DATA};
+                            Cursor cursor = thizContentResolver.query(mediaUri, proj, null, null, null);
 
-                        if (cursor != null) {
-                            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-                            cursor.moveToFirst();
-                            String filePath = cursor.getString(column_index);
-                            xposedDebug("Converted content URI " + mediaUri.toString() + " to file path " + filePath);
-                            cursor.close();
+                            if (cursor != null) {
+                                int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                                cursor.moveToFirst();
+                                String filePath = cursor.getString(column_index);
+                                cursor.close();
 
-                            // Make Snapchat show the video
-                            File videoFile = new File(filePath);
-                            media.setContent(Uri.fromFile(videoFile));
-                        } else {
-                            xposedDebug("Couldn't resolve content URI to file path!");
+                                // Convert filepath to URI, make Snapchat show the video
+                                Uri videoUri = Uri.fromFile(new File(filePath));
+                                media.setContent(videoUri);
+                                xposedDebug("Converted content URI to file URI " + videoUri.toString());
+                            } else {
+                                xposedDebug("Couldn't resolve content URI to file path!\nContent URI: " + mediaUri.toString());
+                            }
                         }
                     }
                     /* Finally the image or video is marked as initialized to prevent reinitialisation of
