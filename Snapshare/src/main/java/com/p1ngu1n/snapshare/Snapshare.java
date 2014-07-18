@@ -159,6 +159,7 @@ public class Snapshare implements IXposedHookLoadPackage {
 
                     ContentResolver thizContentResolver = (ContentResolver) callSuperMethod(thiz, "getContentResolver");
                     if (type.startsWith("image/")) {
+                        xposedDebug("Image URI: " + mediaUri.toString());
                         try {
                             /* TODO: use BitmapFactory with inSampleSize magic to avoid using too much memory,
                              * see http://developer.android.com/training/displaying-bitmaps/load-bitmap.html#load-bitmap */
@@ -318,7 +319,7 @@ public class Snapshare implements IXposedHookLoadPackage {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 if(initializedUri == null) return; // We don't have an image to send, so don't try to send one
-                xposedDebug("ROLLINGOUT");
+                xposedDebug("Doing it's magic!");
                 Object snapCaptureEvent;
 
                 // new stuff for 4.1.10: Class called Snapbryo (gross)
@@ -326,14 +327,16 @@ public class Snapshare implements IXposedHookLoadPackage {
                 // SnapCapturedEvent(Snapbryo(Builder(Media)))
                 if(SNAPCHAT_VERSION >= Obfuscator.FOUR_ONE_TEN) {
                     Object builder = newInstance(findClass("com.snapchat.android.model.Snapbryo.Builder", lpparam.classLoader));
-                    Object snapbryo = callMethod(callMethod(builder, Obfuscator.BUILDER_CONSTRUCTOR.getValue(SNAPCHAT_VERSION), media.getContent()),Obfuscator.CREATE_SNAPBRYO.getValue(SNAPCHAT_VERSION));
+                    builder = callMethod(builder, Obfuscator.BUILDER_CONSTRUCTOR.getValue(SNAPCHAT_VERSION), media.getContent());
+                    Object snapbryo = callMethod(builder, Obfuscator.CREATE_SNAPBRYO.getValue(SNAPCHAT_VERSION));
                     snapCaptureEvent = newInstance(SnapCapturedEventClass, snapbryo);
                 }
                 else {
                     snapCaptureEvent = newInstance(SnapCapturedEventClass, media.getContent());
                 }
-                callMethod(callStaticMethod(findClass("com.snapchat.android.util.eventbus.BusProvider", lpparam.classLoader),Obfuscator.GET_BUS.getValue(SNAPCHAT_VERSION)),
-                        Obfuscator.BUS_POST.getValue(SNAPCHAT_VERSION), snapCaptureEvent);
+
+                Object busProvider = callStaticMethod(findClass("com.snapchat.android.util.eventbus.BusProvider", lpparam.classLoader), Obfuscator.GET_BUS.getValue(SNAPCHAT_VERSION));
+                callMethod(busProvider, Obfuscator.BUS_POST.getValue(SNAPCHAT_VERSION), snapCaptureEvent);
 
                 initializedUri = null; // clean up after ourselves. If we don't do this snapchat will crash.
             }

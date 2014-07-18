@@ -37,9 +37,9 @@ public enum Obfuscator {
     // com.snapchat.android.SnapPreviewFragment
     ON_BACK_PRESS (new String[] {"onDelegatedBackPress", "m", "m", "c", "o" ,"l", "l", "q"}),
     // com.snapchat.android.model.Snapbryo.Builder
-    BUILDER_CONSTRUCTOR (new String[] {"a", "a", "a", "a", "a", "a", "a", "a"}),
+    BUILDER_CONSTRUCTOR (new String[] {null, null, null, "a", "a", "a", "a", "a"}),
     // com.snapchat.android.model.Snapbryo.Builder
-    CREATE_SNAPBRYO (new String[] {"a", "a", "a", "a", "a", "a", "a", "a"});
+    CREATE_SNAPBRYO (new String[] {null, null, null, "a", "a", "a", "a", "a"});
 
     public static final int FOUR_20 = 0;
     public static final int FOUR_21 = 1;
