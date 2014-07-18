@@ -45,6 +45,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XC_MethodReplacement;
 import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
@@ -346,23 +347,11 @@ public class Snapshare implements IXposedHookLoadPackage {
         /**
          * Stop snapchat deleting our video when the view is cancelled.
          */
-        findAndHookMethod("com.snapchat.android.SnapPreviewFragment", lpparam.classLoader, Obfuscator.ON_BACK_PRESS.getValue(SNAPCHAT_VERSION), new XC_MethodHook() {
+        findAndHookMethod("com.snapchat.android.SnapPreviewFragment", lpparam.classLoader, Obfuscator.ON_BACK_PRESS.getValue(SNAPCHAT_VERSION), new XC_MethodReplacement() {
             @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                Object thiz = param.thisObject;
-                Uri tempFileUri = Uri.fromFile(File.createTempFile("delete", "me"));
-
-                Object event;
-                if(SNAPCHAT_VERSION < Obfuscator.FOUR_ONE_TEN) // make sure we dont delete video files on accident!
-                    event = newInstance(SnapCapturedEventClass, tempFileUri);
-                else {
-                    Object builder = newInstance(findClass("com.snapchat.android.model.Snapbryo.Builder", lpparam.classLoader));
-                    builder = callMethod(builder, Obfuscator.BUILDER_CONSTRUCTOR.getValue(SNAPCHAT_VERSION), tempFileUri);
-                    event = newInstance(findClass("com.snapchat.android.model.Snapbryo", lpparam.classLoader), builder);
-                }
-
-                setObjectField(thiz, Obfuscator.M_SNAP_C_EVENT.getValue(SNAPCHAT_VERSION), event);
-                xposedDebug("Prevented snapchat from deleting our video.");
+            protected Object replaceHookedMethod(MethodHookParam methodHookParam) throws Throwable {
+                xposedDebug("Prevented video deletion");
+                return null;
             }
         });
 
