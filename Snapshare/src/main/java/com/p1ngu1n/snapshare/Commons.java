@@ -39,4 +39,9 @@ public class Commons {
     public static final int ROTATION_NONE = 0;
     public static final int ROTATION_CW = 90;
     public static final int ROTATION_CCW = 270;
+
+    // Preferences and their default values
+    public static int ROTATION_MODE = ROTATION_CW;
+    public static int ADJUST_METHOD = ADJUST_CROP;
+    public static boolean DEBUGGING = false;
 }

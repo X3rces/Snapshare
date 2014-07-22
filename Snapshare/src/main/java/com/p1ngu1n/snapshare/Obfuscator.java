@@ -64,4 +64,31 @@ public enum Obfuscator {
     public String getValue(int version) {
         return this.v[version];
     }
+
+    public static int getVersion(int version) {
+        if(version >= 323) {
+            return Obfuscator.FIVE_ZERO_TWENTYTHREE;
+        }
+        else if(version >= 298) {
+            return Obfuscator.FIVE_ZERO_NINE;
+        }
+        else if(version >= 274) {
+            return Obfuscator.FIVE_ZERO_TWO;
+        }
+        else if(version >= 222) {
+            return Obfuscator.FOUR_ONE_TWELVE;
+        }
+        else if(version >= 218) {
+            return Obfuscator.FOUR_ONE_TEN;
+        }
+        else if(version >= 181) {
+            return Obfuscator.FOUR_22;
+        }
+        else if(version >= 175) {
+            return Obfuscator.FOUR_21;
+        }
+        else { // version < 175
+            return Obfuscator.FOUR_20;
+        }
+    }
 }
