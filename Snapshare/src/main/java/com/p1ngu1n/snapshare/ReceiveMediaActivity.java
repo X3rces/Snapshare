@@ -55,6 +55,7 @@ public class ReceiveMediaActivity extends Activity {
             if (mediaUri != null) {
                 Log.d(Commons.LOG_TAG, "Received Media share of type " + type + "\nand URI " + mediaUri.toString() + "\nCalling hooked Snapchat with same Intent.");
                 intent.setComponent(ComponentName.unflattenFromString("com.snapchat.android/.LandingPageActivity"));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
             }
         }
