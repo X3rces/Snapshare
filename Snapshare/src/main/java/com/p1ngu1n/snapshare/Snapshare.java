@@ -103,9 +103,9 @@ public class Snapshare implements IXposedHookLoadPackage {
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Utils.refreshPreferences();
                 Utils.xposedDebug("----------------- SNAPSHARE STARTED -----------------", false);
-                Object thiz = param.thisObject;
+                Activity activity = (Activity) param.thisObject;
                 // Get intent, action and MIME type
-                Intent intent = (Intent) callSuperMethod(thiz, "getIntent");
+                Intent intent = (Intent) callSuperMethod(activity, "getIntent");
                 String type = intent.getType();
                 String action = intent.getAction();
                 Utils.xposedDebug("Intent type: " + type + ", intent action:" + action);
@@ -125,7 +125,8 @@ public class Snapshare implements IXposedHookLoadPackage {
                         return;
                     }
 
-                    ContentResolver thizContentResolver = (ContentResolver) callSuperMethod(thiz, "getContentResolver");
+                    ContentResolver thizContentResolver = (ContentResolver) callSuperMethod(activity, "getContentResolver");
+
                     if (type.startsWith("image/")) {
                         Utils.xposedDebug("Image URI: " + mediaUri.toString());
                         try {
@@ -158,7 +159,7 @@ public class Snapshare implements IXposedHookLoadPackage {
                              * Then we crop the picture to that rectangle
                              */
                             DisplayMetrics dm = new DisplayMetrics();
-                            ((WindowManager) callSuperMethod(thiz, "getWindowManager")).getDefaultDisplay().getMetrics(dm);
+                            ((WindowManager) callSuperMethod(activity, "getWindowManager")).getDefaultDisplay().getMetrics(dm);
                             int dWidth = dm.widthPixels;
                             int dHeight = dm.heightPixels;
 
@@ -228,11 +229,11 @@ public class Snapshare implements IXposedHookLoadPackage {
                         }
                     }
                     else if (type.startsWith("video/")) {
-                        Uri videoUri = null;
+                        Uri videoUri;
                         // Snapchat expects the video URI to be in the file:// scheme, not content:// scheme
                         if (URLUtil.isFileUrl(mediaUri.toString()))
                         {
-                            media.setContent(mediaUri);
+                            videoUri = mediaUri;
                             Utils.xposedDebug("Already had File URI: " + mediaUri.toString());
                         }
                         // No file URI, so we have to convert it
@@ -243,6 +244,26 @@ public class Snapshare implements IXposedHookLoadPackage {
                                 Utils.xposedDebug("Converted content URI to file URI " + videoUri.toString());
                             } else {
                                 Utils.xposedDebug("Couldn't resolve URI to file:// scheme: " + mediaUri.toString());
+                            }
+                        }
+
+                        if (videoUri != null) {
+                            long fileSize = new File(videoUri.getPath()).length();
+                            // Get size of video and compare to the maximum size
+                            if (fileSize > Commons.MAX_VIDEO_SIZE) {
+                                String readableFileSize = Utils.formatBytes(fileSize);
+                                String readableMaxSize = Utils.formatBytes(Commons.MAX_VIDEO_SIZE);
+                                String readableDifference = Utils.formatBytes(fileSize - Commons.MAX_VIDEO_SIZE);
+
+                                Toast.makeText(activity, String.format("The video you shared is too large (%s). Snapshat only supports files up to %s. This video is %s too big.", readableFileSize, readableMaxSize, readableDifference), Toast.LENGTH_LONG).show();
+
+                                // Close Snapchat's activity and stop further execution
+                                activity.finish();
+                                return;
+                            }
+                            else {
+                                // Everything is okay, store URI
+                                media.setContent(mediaUri);
                             }
                         }
                     }

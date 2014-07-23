@@ -44,4 +44,7 @@ public class Commons {
     public static int ROTATION_MODE = ROTATION_CW;
     public static int ADJUST_METHOD = ADJUST_CROP;
     public static boolean DEBUGGING = false;
+
+    // Maximum video size setting (2.50 MB)
+    public static int MAX_VIDEO_SIZE = (int) (2.50 * 1024 * 1024);
 }

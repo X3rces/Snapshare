@@ -66,6 +66,13 @@ public class Utils {
         Commons.DEBUGGING = preferences.getBoolean("pref_debug", Commons.DEBUGGING);
     }
 
+    public static String formatBytes(long bytes) {
+        int exp = (int) (Math.log(bytes) / Math.log(1024));
+        String[] prefixes = new String[]{ "", "K", "M", "G", "T", "P", "E" };
+        String prefix = prefixes[exp];
+        return String.format("%.2f %sB", bytes / Math.pow(1024, exp), prefix);
+    }
+
     /**
      * Write debug information to the Xposed Log if enabled in the settings
      * @param message The message you want to log
