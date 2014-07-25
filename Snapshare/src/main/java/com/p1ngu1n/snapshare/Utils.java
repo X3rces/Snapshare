@@ -64,6 +64,8 @@ public class Utils {
         Commons.ROTATION_MODE = Integer.parseInt(preferences.getString("pref_rotation", Integer.toString(Commons.ROTATION_MODE)));
         Commons.ADJUST_METHOD = Integer.parseInt(preferences.getString("pref_adjustment", Integer.toString(Commons.ADJUST_METHOD)));
         Commons.DEBUGGING = preferences.getBoolean("pref_debug", Commons.DEBUGGING);
+        Commons.CHECK_SIZE = !preferences.getBoolean("pref_size_disabled", !Commons.CHECK_SIZE);
+        Commons.TIMBER = preferences.getBoolean("pref_timber", Commons.TIMBER);
     }
 
     public static String formatBytes(long bytes) {

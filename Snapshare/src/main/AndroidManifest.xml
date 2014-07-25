@@ -57,6 +57,11 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity-alias>
+
+        <activity
+            android:name=".DeveloperSettingsActivity"
+            android:label="@string/developer_settings" >
+        </activity>
     </application>
 
 </manifest>

@@ -22,6 +22,7 @@ package com.p1ngu1n.snapshare;
 
 import android.app.Activity;
 import android.content.ComponentName;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.PackageManager;
@@ -31,19 +32,32 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 
 /**
- * Class to hold all the preferences
+ * Class to hold all the regular_settings
  *
  */
-public class SettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener{
+public class SettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener {
+    private static final int CLICKS_REQUIRED = 3;
+    private int hitCounter;
+    private long firstHitTimestamp;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getPreferenceManager().setSharedPreferencesMode(1);
-        addPreferencesFromResource(R.xml.prefs);
+        addPreferencesFromResource(R.xml.regular_settings);
 
         Preference launcherPref = findPreference("pref_launcher");
         launcherPref.setOnPreferenceChangeListener(launcherChangeListener);
+
+        Preference aboutPreference = findPreference("pref_about");
+        aboutPreference.setOnPreferenceClickListener(this);
+
+        try {
+            String versionName = getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(), 0).versionName;
+            aboutPreference.setTitle(String.format(getString(R.string.pref_about_title), versionName));
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
 
         updateSummary("pref_adjustment");
         updateSummary("pref_rotation");
@@ -54,8 +68,10 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
      * @param key the preference's key
      */
     private void updateSummary(String key) {
-        if(findPreference(key) instanceof ListPreference) {
-            ListPreference lp = (ListPreference) findPreference(key);
+        Preference pref = findPreference(key);
+
+        if(pref instanceof ListPreference) {
+            ListPreference lp = (ListPreference) pref;
             lp.setSummary(lp.getEntry());
         }
     }
@@ -72,6 +88,25 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
             return true;
         }
     };
+
+    @Override
+    public boolean onPreferenceClick(Preference preference) {
+        long currentTimestamp = System.currentTimeMillis();
+        if (firstHitTimestamp < (currentTimestamp - 500)) {
+            hitCounter = 1;
+            firstHitTimestamp = currentTimestamp;
+        } else {
+            hitCounter++;
+        }
+
+        if (hitCounter == CLICKS_REQUIRED) {
+            hitCounter = 0;
+            Intent myIntent = new Intent(getActivity(), DeveloperSettingsActivity.class);
+            getActivity().startActivity(myIntent);
+        }
+
+        return true;
+    }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {

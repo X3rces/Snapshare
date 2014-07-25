@@ -1,8 +1,8 @@
 package com.p1ngu1n.snapshare;
 /**
- SettingsActivity.java created on 22/12/13.
+ DeveloperSettingsActivity.java created on 24/7/14.
 
- Copyright (C) 2013 Alec McGavin <alec.mcgavin@gmail.com>
+ Copyright (C) 2014 P1nGu1n
 
  This file is part of Snapshare.
 
@@ -28,11 +28,11 @@ import android.preference.PreferenceManager;
  * Activity that gets called when the icon is clicked.
  *
  */
-public class SettingsActivity extends Activity {
+public class DeveloperSettingsActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingsFragment()).commit();
-        PreferenceManager.setDefaultValues(this, R.xml.regular_settings, false);
+        getFragmentManager().beginTransaction().replace(android.R.id.content, new DeveloperSettingsFragment()).commit();
+        PreferenceManager.setDefaultValues(this, R.xml.developer_settings, false);
     }
 }

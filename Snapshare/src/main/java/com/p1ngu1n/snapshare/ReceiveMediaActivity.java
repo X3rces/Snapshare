@@ -1,7 +1,7 @@
 package com.p1ngu1n.snapshare;
 
 /**
- ReceiveMediaActivity.java created on 6/26/13.
+ ReceiveMediaActivity.java created on 26/6/13.
 
  Copyright (C) 2013 Sebastian Stammler <stammler@cantab.net>
 

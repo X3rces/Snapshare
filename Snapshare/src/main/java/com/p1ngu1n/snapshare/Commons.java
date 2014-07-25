@@ -1,7 +1,7 @@
 package com.p1ngu1n.snapshare;
 
 /**
- Commons.java created on 7/11/14.
+ Commons.java created on 11/7/14.
 
  Copyright (C) 2014 P1nGu1n
 
@@ -44,6 +44,8 @@ public class Commons {
     public static int ROTATION_MODE = ROTATION_CW;
     public static int ADJUST_METHOD = ADJUST_CROP;
     public static boolean DEBUGGING = false;
+    public static boolean CHECK_SIZE = true;
+    public static boolean TIMBER = false;
 
     // Maximum video size setting (2.50 MB)
     public static int MAX_VIDEO_SIZE = (int) (2.50 * 1024 * 1024);

@@ -250,7 +250,7 @@ public class Snapshare implements IXposedHookLoadPackage {
                         if (videoUri != null) {
                             long fileSize = new File(videoUri.getPath()).length();
                             // Get size of video and compare to the maximum size
-                            if (fileSize > Commons.MAX_VIDEO_SIZE) {
+                            if (Commons.CHECK_SIZE && fileSize > Commons.MAX_VIDEO_SIZE) {
                                 String readableFileSize = Utils.formatBytes(fileSize);
                                 String readableMaxSize = Utils.formatBytes(Commons.MAX_VIDEO_SIZE);
                                 String readableDifference = Utils.formatBytes(fileSize - Commons.MAX_VIDEO_SIZE);
@@ -334,6 +334,14 @@ public class Snapshare implements IXposedHookLoadPackage {
                 return null;
             }
         });
+
+        if (Commons.TIMBER) {
+            Utils.xposedDebug("Timber enabled");
+            findAndHookMethod("com.snapchat.android.Timber", lpparam.classLoader, "a", XC_MethodReplacement.returnConstant(true));
+            findAndHookMethod("com.snapchat.android.Timber", lpparam.classLoader, "b", XC_MethodReplacement.returnConstant(true));
+            findAndHookMethod("com.snapchat.android.Timber", lpparam.classLoader, "c", XC_MethodReplacement.returnConstant(true));
+            findAndHookMethod("com.snapchat.android.Timber", lpparam.classLoader, "d", XC_MethodReplacement.returnConstant("SnapchatTimber"));
+        }
 
     }
 
