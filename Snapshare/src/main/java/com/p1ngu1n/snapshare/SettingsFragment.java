@@ -54,7 +54,7 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 
         try {
             String versionName = getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(), 0).versionName;
-            aboutPreference.setTitle(String.format(getString(R.string.pref_about_title), versionName));
+            aboutPreference.setTitle(getString(R.string.pref_about_title, versionName));
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }

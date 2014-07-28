@@ -28,8 +28,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.p1ngu1n.snapshare.Commons;
-
 /**
  * This Activity has an intent-filter to receive images and videos.
  *
