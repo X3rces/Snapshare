@@ -119,8 +119,8 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                 String action = intent.getAction();
                 Utils.xposedDebug("Intent type: " + type + ", intent action:" + action);
 
-                // Check if this is a normal launch of Snapchat or actually called by Snapshare
-                if (type != null && Intent.ACTION_SEND.equals(action)) {
+                // Check if this is a normal launch of Snapchat or actually called by Snapshare and if loaded from recents
+                if (type != null && Intent.ACTION_SEND.equals(action) && (intent.getFlags() & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) == 0) {
                     Uri mediaUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
                     // Check for bogus call
                     if (mediaUri == null) {
