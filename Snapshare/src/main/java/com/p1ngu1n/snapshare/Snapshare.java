@@ -22,10 +22,13 @@ package com.p1ngu1n.snapshare;
  */
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
+import android.content.res.XModuleResources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -35,9 +38,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
-import android.view.WindowManager;
 import android.webkit.URLUtil;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -45,25 +46,33 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
+import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XC_MethodReplacement;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 import static de.robv.android.xposed.XposedHelpers.callMethod;
+import static de.robv.android.xposed.XposedHelpers.callStaticMethod;
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.newInstance;
-import static de.robv.android.xposed.XposedHelpers.callStaticMethod;
 
-public class Snapshare implements IXposedHookLoadPackage {
+public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit {
     /** Snapchat's version */
     private static int SNAPCHAT_VERSION;
+
+    private static XModuleResources mResources;
 
     /** After calling initSnapPreviewFragment() below, we set the
      * initializedUri to the current media's Uri to prevent another call of onCreate() to initialize
      * the media again. E.g. onCreate() is called again if the phone is rotated. */
     private Uri initializedUri;
+
+    @Override
+    public void initZygote(StartupParam startupParam) throws Throwable {
+        mResources = XModuleResources.createInstance(startupParam.modulePath, null);
+    }
 
     public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
         if (!lpparam.packageName.equals("com.snapchat.android"))
@@ -240,7 +249,6 @@ public class Snapshare implements IXposedHookLoadPackage {
                         else {
                             videoUri = Utils.convertContentToFileUri(contentResolver, mediaUri);
                             if (videoUri != null) {
-                                media.setContent(videoUri);
                                 Utils.xposedDebug("Converted content URI to file URI " + videoUri.toString());
                             } else {
                                 Utils.xposedDebug("Couldn't resolve URI to file:// scheme: " + mediaUri.toString());
@@ -254,16 +262,21 @@ public class Snapshare implements IXposedHookLoadPackage {
                                 String readableFileSize = Utils.formatBytes(fileSize);
                                 String readableMaxSize = Utils.formatBytes(Commons.MAX_VIDEO_SIZE);
                                 String readableDifference = Utils.formatBytes(fileSize - Commons.MAX_VIDEO_SIZE);
-
-                                Toast.makeText(activity, String.format("The video you shared is too large (%s). Snapshat only supports files up to %s. This video is %s too big.", readableFileSize, readableMaxSize, readableDifference), Toast.LENGTH_LONG).show();
-
-                                // Close Snapchat's activity and stop further execution
-                                activity.finish();
+                                // Inform the user with a dialog
+                                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity);
+                                dialogBuilder.setTitle(mResources.getString(R.string.app_name));
+                                dialogBuilder.setMessage(mResources.getString(R.string.size_error, readableFileSize, readableMaxSize, readableDifference));
+                                dialogBuilder.setPositiveButton(mResources.getString(R.string.okay), new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.cancel();
+                                    }
+                                });
+                                dialogBuilder.show();
                                 return;
                             }
                             else {
                                 // Everything is okay, store URI
-                                media.setContent(mediaUri);
+                                media.setContent(videoUri);
                             }
                         }
                     }

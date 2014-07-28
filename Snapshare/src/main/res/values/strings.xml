@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Snapshare</string>
+    <string name="app_name" translatable="false">Snapshare</string>
     <string name="xposed_description">Send any image and video via Snapchat right from the share menu.</string>
     <string name="snapshare_settings">Snapshare Settings</string>
     <string name="developer_settings">Developer Settings</string>
+
+    <!-- Size Dialog -->
+    <string name="size_error">"The video you shared is too large (%1$s). Snapshat only supports files up to %2$s, it\'s %3$s too big."</string>
+    <string name="okay">"Okay, I get it."</string>
 
     <!-- Image settings -->
     <string name="pref_images">Images</string>
