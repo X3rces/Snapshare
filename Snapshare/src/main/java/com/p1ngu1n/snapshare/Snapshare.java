@@ -112,7 +112,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Utils.refreshPreferences();
                 Utils.xposedDebug("----------------- SNAPSHARE STARTED -----------------", false);
-                Activity activity = (Activity) param.thisObject;
+                final Activity activity = (Activity) param.thisObject;
                 // Get intent, action and MIME type
                 Intent intent = activity.getIntent();
                 String type = intent.getType();
@@ -261,23 +261,24 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                             if (Commons.CHECK_SIZE && fileSize > Commons.MAX_VIDEO_SIZE) {
                                 String readableFileSize = Utils.formatBytes(fileSize);
                                 String readableMaxSize = Utils.formatBytes(Commons.MAX_VIDEO_SIZE);
-                                String readableDifference = Utils.formatBytes(fileSize - Commons.MAX_VIDEO_SIZE);
+                                Utils.xposedDebug("Video too big (" + readableFileSize + ")");
                                 // Inform the user with a dialog
                                 AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity);
                                 dialogBuilder.setTitle(mResources.getString(R.string.app_name));
-                                dialogBuilder.setMessage(mResources.getString(R.string.size_error, readableFileSize, readableMaxSize, readableDifference));
-                                dialogBuilder.setPositiveButton(mResources.getString(R.string.okay), new DialogInterface.OnClickListener() {
+                                dialogBuilder.setMessage(mResources.getString(R.string.size_error, readableFileSize, readableMaxSize));
+                                dialogBuilder.setPositiveButton(mResources.getString(R.string.continue_anyway), new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
                                         dialog.cancel();
                                     }
                                 });
+                                dialogBuilder.setNegativeButton(mResources.getString(R.string.go_back), new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        activity.finish();
+                                    }
+                                });
                                 dialogBuilder.show();
-                                return;
                             }
-                            else {
-                                // Everything is okay, store URI
-                                media.setContent(videoUri);
-                            }
+                            media.setContent(videoUri);
                         }
                     }
                     /* Finally the image or video is marked as initialized to prevent reinitialisation of
