@@ -105,7 +105,7 @@ public class Snapshare implements IXposedHookLoadPackage {
                 Utils.xposedDebug("----------------- SNAPSHARE STARTED -----------------", false);
                 Activity activity = (Activity) param.thisObject;
                 // Get intent, action and MIME type
-                Intent intent = (Intent) callSuperMethod(activity, "getIntent");
+                Intent intent = activity.getIntent();
                 String type = intent.getType();
                 String action = intent.getAction();
                 Utils.xposedDebug("Intent type: " + type + ", intent action:" + action);
@@ -125,14 +125,14 @@ public class Snapshare implements IXposedHookLoadPackage {
                         return;
                     }
 
-                    ContentResolver thizContentResolver = (ContentResolver) callSuperMethod(activity, "getContentResolver");
+                    ContentResolver contentResolver = activity.getContentResolver();
 
                     if (type.startsWith("image/")) {
                         Utils.xposedDebug("Image URI: " + mediaUri.toString());
                         try {
                             /* TODO: use BitmapFactory with inSampleSize magic to avoid using too much memory,
                              * see http://developer.android.com/training/displaying-bitmaps/load-bitmap.html#load-bitmap */
-                            Bitmap bitmap = MediaStore.Images.Media.getBitmap(thizContentResolver, mediaUri);
+                            Bitmap bitmap = MediaStore.Images.Media.getBitmap(contentResolver, mediaUri);
                             int width = bitmap.getWidth();
                             int height = bitmap.getHeight();
                             Utils.xposedDebug("Image shared, size: " + width + " x " + height + " (w x h)");
@@ -159,7 +159,7 @@ public class Snapshare implements IXposedHookLoadPackage {
                              * Then we crop the picture to that rectangle
                              */
                             DisplayMetrics dm = new DisplayMetrics();
-                            ((WindowManager) callSuperMethod(activity, "getWindowManager")).getDefaultDisplay().getMetrics(dm);
+                            activity.getWindowManager().getDefaultDisplay().getMetrics(dm);
                             int dWidth = dm.widthPixels;
                             int dHeight = dm.heightPixels;
 
@@ -238,7 +238,7 @@ public class Snapshare implements IXposedHookLoadPackage {
                         }
                         // No file URI, so we have to convert it
                         else {
-                            videoUri = Utils.convertContentToFileUri(thizContentResolver, mediaUri);
+                            videoUri = Utils.convertContentToFileUri(contentResolver, mediaUri);
                             if (videoUri != null) {
                                 media.setContent(videoUri);
                                 Utils.xposedDebug("Converted content URI to file URI " + videoUri.toString());

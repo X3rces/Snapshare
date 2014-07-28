@@ -32,7 +32,7 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 
 /**
- * Class to hold all the regular_settings
+ * Class to hold all the regular settings
  *
  */
 public class SettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener {
