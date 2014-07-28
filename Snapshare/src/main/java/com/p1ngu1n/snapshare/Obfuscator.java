@@ -26,20 +26,20 @@ package com.p1ngu1n.snapshare;
  *
  */
 public enum Obfuscator {
-    // com.snapchat.android.camera.Camera(Preview)Fragment
-    CAMERA_LOAD (new String[] {"refreshFlashButton", "k", "l", "e", "e", "p", "q", "q"}),
-    // com.snapchat.android.util.eventbus.BusProvider
-    GET_BUS (new String[] {"getInstance", "a", "a", "a", "a", "a", "a", "a"}),
+    // com.snapchat.android.camera.Camera(Preview)Fragment  (void)
+    CAMERA_LOAD (new String[] {"refreshFlashButton", "k", "l", "e", "e", "p", "q", "q", "r"}),
+    // com.snapchat.android.util.eventbus.BusProvider       (Bus)
+    GET_BUS (new String[] {"getInstance", "a", "a", "a", "a", "a", "a", "a", "a"}),
     // com.squareup.otto.Bus
-    BUS_POST (new String[] {"post", "c", "c", "c", "c", "a", "a", "a"}),
+    BUS_POST (new String[] {"post", "c", "c", "c", "c", "a", "a", "a", "a"}),
     // com.snapchat.android.SnapPreviewFragment
-    M_SNAP_C_EVENT (new String[] {"mSnapCapturedEvent", "w", "w", "v", "v", "u", "u", "u"}),
+    M_SNAP_C_EVENT (new String[] {"mSnapCapturedEvent", "w", "w", "v", "v", "u", "u", "u", "z"}),
     // com.snapchat.android.SnapPreviewFragment
-    ON_BACK_PRESS (new String[] {"onDelegatedBackPress", "m", "m", "c", "o" ,"l", "l", "q"}),
+    ON_BACK_PRESS (new String[] {"onDelegatedBackPress", "m", "m", "c", "o" ,"l", "l", "q", "q"}),
     // com.snapchat.android.model.Snapbryo.Builder
-    BUILDER_CONSTRUCTOR (new String[] {null, null, null, "a", "a", "a", "a", "a"}),
+    BUILDER_CONSTRUCTOR (new String[] {null, null, null, "a", "a", "a", "a", "a", "a"}),
     // com.snapchat.android.model.Snapbryo.Builder
-    CREATE_SNAPBRYO (new String[] {null, null, null, "a", "a", "a", "a", "a"});
+    CREATE_SNAPBRYO (new String[] {null, null, null, "a", "a", "a", "a", "a", "a"});
 
     public static final int FOUR_20 = 0;
     public static final int FOUR_21 = 1;
@@ -49,6 +49,7 @@ public enum Obfuscator {
     public static final int FIVE_ZERO_TWO = 5;
     public static final int FIVE_ZERO_NINE = 6;
     public static final int FIVE_ZERO_TWENTYTHREE = 7;
+    public static final int FIVE_ZERO_THIRTYTWO = 8;
 
     private String[] v;
 
@@ -66,25 +67,28 @@ public enum Obfuscator {
     }
 
     public static int getVersion(int version) {
-        if(version >= 323) {
+        if(version >= 352) {
+            return Obfuscator.FIVE_ZERO_THIRTYTWO;
+        }
+        else if (version >= 323) {
             return Obfuscator.FIVE_ZERO_TWENTYTHREE;
         }
-        else if(version >= 298) {
+        else if (version >= 298) {
             return Obfuscator.FIVE_ZERO_NINE;
         }
-        else if(version >= 274) {
+        else if (version >= 274) {
             return Obfuscator.FIVE_ZERO_TWO;
         }
-        else if(version >= 222) {
+        else if (version >= 222) {
             return Obfuscator.FOUR_ONE_TWELVE;
         }
-        else if(version >= 218) {
+        else if (version >= 218) {
             return Obfuscator.FOUR_ONE_TEN;
         }
-        else if(version >= 181) {
+        else if (version >= 181) {
             return Obfuscator.FOUR_22;
         }
-        else if(version >= 175) {
+        else if (version >= 175) {
             return Obfuscator.FOUR_21;
         }
         else { // version < 175
