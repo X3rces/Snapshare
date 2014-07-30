@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name" translatable="false">Snapshare</string>
+    <string name="xposed_description">Sende eine Bild oder Video über Snapchat direkt vom Teilen Menü.</string>
+    <string name="snapshare_settings">Snapshare Einstellungen</string>
+    <string name="developer_settings">Entwickler Einstellungen</string>
+
+    <!-- Size Dialog -->
+    <string name="size_error">"Das zu teilende Video ist zu groß (%1$s), es wird möglicherweise nicht gesendet. Snapchat unterstützt nur Dateien bis zu %2$s."</string>
+    <string name="continue_anyway">Trotzdem fortfahren</string>
+    <string name="go_back">Zurück</string>
+
+    <!-- Image settings -->
+    <string name="pref_images">Bilder</string>
+
+    <string name="pref_rotation_title">Bilder drehen</string>
+    <string name="pref_rotation_default">90</string>
+    <string-array name="pref_rotation_entries">
+        <item>Nicht drehen</item>
+        <item>Im Uhrzeigersinn (90 Grad)</item>
+        <item>Gegen den Uhrzeigersinn (-90 Grad)</item>
+    </string-array>
+    <string-array name="pref_rotation_values">
+        <item>0</item>
+        <item>90</item>
+        <item>270</item>
+    </string-array>
+
+    <string name="pref_adjustment_title">Bilder anpassen</string>
+    <string name="pref_adjustment_default">0</string>
+    <string-array name="pref_adjustment_entries">
+        <item>Zuschneiden</item>
+        <item>Skalieren</item>
+        <item>Nichts</item>
+    </string-array>
+    <string-array name="pref_adjustment_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+    <!-- Other settings -->
+    <string name="pref_other">Sonstiges</string>
+
+    <string name="pref_launcher_title">Symbol im Launcher anzeigen</string>
+    <string name="pref_launcher_on">Zugriff auf die Einstellungen über den Launcher</string>
+    <string name="pref_launcher_off">Zugriff auf die Einstellungen über den Xposed Installer</string>
+
+    <string name="pref_debug_title">Debugging</string>
+    <string name="pref_debug_on">Debug Informationen werden im Xposed Log angezeigt</string>
+    <string name="pref_debug_off">Debug Informationen werden nicht im Xposed Log angezeigt</string>
+
+    <!-- About section -->
+    <string name="pref_about">Über</string>
+    <string name="pref_about_title">Snapshare v%1$s</string>
+    <string name="pref_about_summary">Snapshare wird unter der GPLv3 Lizenz veröffentlicht.</string>
+
+    <!-- Developer settings -->
+    <string name="pref_miscellaneous">Diverses</string>
+
+    <string name="pref_size_title">Überprüfung der Größe des Videos deaktivieren</string>
+    <string name="pref_size_on">Größe des Videos beim Teilen nicht überprüfen</string>
+    <string name="pref_size_off">Größe des Videos beim Teilen überprüfen</string>
+
+    <string name="pref_timber_title">Timber aktivieren</string>
+    <string name="pref_timber_on">Snapshare\'s internal debugging class ist aktiviert</string>
+    <string name="pref_timber_off">Snapshare\'s internal debugging class ist deaktiviert</string>
+</resources>
