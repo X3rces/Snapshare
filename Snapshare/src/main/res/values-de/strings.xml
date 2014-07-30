@@ -15,26 +15,26 @@
     <string name="pref_images">Bilder</string>
 
     <string name="pref_rotation_title">Bilder drehen</string>
-    <string name="pref_rotation_default">90</string>
+    <string name="pref_rotation_default" translatable="false">90</string>
     <string-array name="pref_rotation_entries">
         <item>Nicht drehen</item>
         <item>Im Uhrzeigersinn (90 Grad)</item>
         <item>Gegen den Uhrzeigersinn (-90 Grad)</item>
     </string-array>
-    <string-array name="pref_rotation_values">
+    <string-array name="pref_rotation_values" translatable="false">
         <item>0</item>
         <item>90</item>
         <item>270</item>
     </string-array>
 
     <string name="pref_adjustment_title">Bilder anpassen</string>
-    <string name="pref_adjustment_default">0</string>
+    <string name="pref_adjustment_default" translatable="false">0</string>
     <string-array name="pref_adjustment_entries">
         <item>Zuschneiden</item>
         <item>Skalieren</item>
         <item>Nichts</item>
     </string-array>
-    <string-array name="pref_adjustment_values">
+    <string-array name="pref_adjustment_values" translatable="false">
         <item>0</item>
         <item>1</item>
         <item>2</item>
@@ -53,7 +53,7 @@
 
     <!-- About section -->
     <string name="pref_about">Über</string>
-    <string name="pref_about_title">Snapshare v%1$s</string>
+    <string name="pref_about_title" translatable="false">Snapshare v%1$s</string>
     <string name="pref_about_summary">Snapshare wird unter der GPLv3 Lizenz veröffentlicht.</string>
 
     <!-- Developer settings -->

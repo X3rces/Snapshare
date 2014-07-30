@@ -15,26 +15,26 @@
     <string name="pref_images">Images</string>
 
     <string name="pref_rotation_title">Image rotation mode</string>
-    <string name="pref_rotation_default">90</string>
+    <string name="pref_rotation_default" translatable="false">90</string>
     <string-array name="pref_rotation_entries">
         <item>Don\'t rotate</item>
         <item>Clockwise (90 degrees)</item>
         <item>Counterclockwise (-90 degrees)</item>
     </string-array>
-    <string-array name="pref_rotation_values">
+    <string-array name="pref_rotation_values" translatable="false">
         <item>0</item>
         <item>90</item>
         <item>270</item>
     </string-array>
 
     <string name="pref_adjustment_title">Image adjustment method</string>
-    <string name="pref_adjustment_default">0</string>
+    <string name="pref_adjustment_default" translatable="false">0</string>
     <string-array name="pref_adjustment_entries">
         <item>Crop</item>
         <item>Scale</item>
         <item>None</item>
     </string-array>
-    <string-array name="pref_adjustment_values">
+    <string-array name="pref_adjustment_values" translatable="false">
         <item>0</item>
         <item>1</item>
         <item>2</item>
@@ -53,15 +53,15 @@
 
     <!-- About section -->
     <string name="pref_about">About</string>
-    <string name="pref_about_title">Snapshare v%1$s</string>
+    <string name="pref_about_title" translatable="false">Snapshare v%1$s</string>
     <string name="pref_about_summary">Snapshare is released under the GPLv3 license.</string>
 
     <!-- Developer settings -->
     <string name="pref_miscellaneous">Miscellaneous</string>
 
     <string name="pref_size_title">Disable video size check</string>
-    <string name="pref_size_on">Don\'t check size when sharing video</string>
-    <string name="pref_size_off">Check size when sharing video</string>
+    <string name="pref_size_on">Don\'t check size when sharing a video</string>
+    <string name="pref_size_off">Check size when sharing a video</string>
 
     <string name="pref_timber_title">Enable Timber</string>
     <string name="pref_timber_on">Snapshare\'s internal debugging class is enabled</string>
