@@ -5,11 +5,15 @@
     <string name="snapshare_settings">Snapshare Instellingen</string>
     <string name="developer_settings">Ontwikkelaarsinstellingen</string>
 
-    <!-- Size Dialog -->
+    <!-- Dialogs -->
+    <string name="module_not_enabled">Snapshare is niet geactiveerd. Activeer het in Xposed Installer en herstart je apparaat.</string>
     <string name="size_error">De video die u hebt gedeeld is te groot (%1$s), hij verzendt waarschijnlijk niet. Snapshat ondersteunt alleen bestanden tot %2$s.</string>
+    <string name="unable_open_xposed">Het openen van Xposed Installer is niet gelukt, is deze wel geïnstalleerd?</string>
+    <string name="open_xposed_installer">Open Xposed Installer</string>
     <string name="continue_anyway">Toch doorgaan</string>
     <string name="go_back">Ga terug</string>
-
+    <string name="close">Sluiten</string>
+    
     <!-- Image settings -->
     <string name="pref_images">Afbeeldingen</string>
 
