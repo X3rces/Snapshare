@@ -20,8 +20,6 @@ package com.p1ngu1n.snapshare;
  a gazillion times. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.p1ngu1n.snapshare.Commons;
-
 import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 
@@ -62,5 +60,9 @@ public class XposedUtils {
      */
     public static void log(String message) {
         log(message, true);
+    }
+
+    public static void log(Throwable throwable) {
+        XposedBridge.log(throwable);
     }
 }

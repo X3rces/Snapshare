@@ -21,17 +21,12 @@ package com.p1ngu1n.snapshare;
  */
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.ContentResolver;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.widget.Toast;
-
-import com.p1ngu1n.snapshare.R;
 
 import java.io.File;
 
@@ -46,9 +41,8 @@ public class Utils {
         String [] projection = {MediaStore.Images.Media.DATA};
         Cursor cursor = contentResolver.query(contentUri, projection, null, null, null);
 
-        if (cursor != null) {
+        if (cursor != null && cursor.moveToFirst()) {
             int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-            cursor.moveToFirst();
             String filePath = cursor.getString(column_index);
             cursor.close();
 
