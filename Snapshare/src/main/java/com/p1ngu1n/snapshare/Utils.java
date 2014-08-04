@@ -1,15 +1,4 @@
 package com.p1ngu1n.snapshare;
-
-import android.content.ContentResolver;
-import android.database.Cursor;
-import android.net.Uri;
-import android.provider.MediaStore;
-
-import java.io.File;
-
-import de.robv.android.xposed.XSharedPreferences;
-import de.robv.android.xposed.XposedBridge;
-
 /**
  Commons.java created on 7/11/14.
 
@@ -30,9 +19,23 @@ import de.robv.android.xposed.XposedBridge;
  You should have received a copy of the GNU General Public License
  a gazillion times. If not, see <http://www.gnu.org/licenses/>.
  */
-public class Utils {
-    private static final XSharedPreferences preferences = new XSharedPreferences("com.p1ngu1n.snapshare");
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.MediaStore;
+import android.widget.Toast;
+
+import com.p1ngu1n.snapshare.R;
+
+import java.io.File;
+
+public class Utils {
     /**
      * Converts the content:// scheme to the file:// scheme
      * @param contentResolver
@@ -57,17 +60,11 @@ public class Utils {
     }
 
     /**
-     * Refreshes preferences
+     * Makes an human-readable string with 2 decimals of a number of bytes.
+     * For example, (1024 * 1024 * 12.5) would return 12.50 MB.
+     * @param bytes The number of bytes
+     * @return The human-readable bytes
      */
-    public static void refreshPreferences() {
-        preferences.reload();
-        Commons.ROTATION_MODE = Integer.parseInt(preferences.getString("pref_rotation", Integer.toString(Commons.ROTATION_MODE)));
-        Commons.ADJUST_METHOD = Integer.parseInt(preferences.getString("pref_adjustment", Integer.toString(Commons.ADJUST_METHOD)));
-        Commons.DEBUGGING = preferences.getBoolean("pref_debug", Commons.DEBUGGING);
-        Commons.CHECK_SIZE = !preferences.getBoolean("pref_size_disabled", !Commons.CHECK_SIZE);
-        Commons.TIMBER = preferences.getBoolean("pref_timber", Commons.TIMBER);
-    }
-
     public static String formatBytes(long bytes) {
         int exp = (int) (Math.log(bytes) / Math.log(1024));
         String[] prefixes = new String[]{ "", "K", "M", "G", "T", "P", "E" };
@@ -76,25 +73,20 @@ public class Utils {
     }
 
     /**
-     * Write debug information to the Xposed Log if enabled in the settings
-     * @param message The message you want to log
-     * @param prefix Whether it should be prefixed by the log-tag
+     * Checks whether Snapshare is enabled. If it's enabled, Xposed should hook this method and return true.
+     * @return If Snapshare is enabled or not
      */
-    public static void xposedDebug(String message, boolean prefix) {
-        if (Commons.DEBUGGING) {
-            if (prefix) {
-                message = Commons.LOG_TAG + message;
-            }
-            XposedBridge.log(message);
-        }
+    public static boolean isModuleEnabled() {
+        return false;
     }
 
-    /**
-     * Write debug information to the Xposed Log if enabled in the settings
-     * This method always prefixes the message by the log-tag
-     * @param message The message you want to log
-     */
-    public static void xposedDebug(String message) {
-        xposedDebug(message, true);
+    public static void openXposedInstaller(Activity activity) {
+        Intent intent = activity.getPackageManager().getLaunchIntentForPackage("de.robv.android.xposed.installer");
+        if (intent == null) {
+            Toast.makeText(activity, activity.getString(R.string.unable_open_xposed), Toast.LENGTH_LONG).show();
+        } else {
+            //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            activity.startActivity(intent);
+        }
     }
 }

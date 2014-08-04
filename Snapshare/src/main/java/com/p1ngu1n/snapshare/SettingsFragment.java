@@ -21,7 +21,9 @@ package com.p1ngu1n.snapshare;
  */
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -35,7 +37,7 @@ import android.preference.PreferenceFragment;
  * Class to hold all the regular settings
  *
  */
-public class SettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener {
+public class SettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener, AlertDialog.OnClickListener {
     private static final int CLICKS_REQUIRED = 3;
     private int hitCounter;
     private long firstHitTimestamp;
@@ -61,6 +63,10 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 
         updateSummary("pref_adjustment");
         updateSummary("pref_rotation");
+
+        if (!Utils.isModuleEnabled()) {
+            createXposedDialog().show();
+        }
     }
 
     /**
@@ -125,4 +131,23 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
     }
 
+    /**
+     * Pretty much self-explanatory, creates a dialog saying the module is not activated.
+     * @return The created dialog
+     */
+    private AlertDialog createXposedDialog() {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
+        dialogBuilder.setTitle(getString(R.string.app_name));
+        dialogBuilder.setMessage(getString(R.string.module_not_enabled));
+        dialogBuilder.setPositiveButton(getString(R.string.open_xposed_installer), this);
+        dialogBuilder.setNegativeButton(getString(R.string.close), this);
+        return dialogBuilder.create();
+    }
+
+    @Override
+    public void onClick(DialogInterface dialog, int which) {
+        if (which == AlertDialog.BUTTON_POSITIVE) {
+            Utils.openXposedInstaller(getActivity());
+        }
+    }
 }

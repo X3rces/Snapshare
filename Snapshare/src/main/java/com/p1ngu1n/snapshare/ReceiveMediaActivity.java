@@ -22,11 +22,14 @@ package com.p1ngu1n.snapshare;
  */
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 
 /**
  * This Activity has an intent-filter to receive images and videos.
@@ -39,10 +42,11 @@ import android.util.Log;
  * LandingPageActivity, the injected code checks if the intent is a share intent and then does the
  * work necessary to let the image or video be shown.
  */
-public class ReceiveMediaActivity extends Activity {
+public class ReceiveMediaActivity extends Activity implements DialogInterface.OnClickListener {
     @Override
     public void onCreate (Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        boolean finish = true;
         Intent intent = getIntent();
         String action = intent.getAction();
         String type = intent.getType();
@@ -52,12 +56,40 @@ public class ReceiveMediaActivity extends Activity {
 
             if (mediaUri != null) {
                 Log.d(Commons.LOG_TAG, "Received Media share of type " + type + "\nand URI " + mediaUri.toString() + "\nCalling hooked Snapchat with same Intent.");
-                intent.setComponent(ComponentName.unflattenFromString("com.snapchat.android/.LandingPageActivity"));
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
+                if (Utils.isModuleEnabled()) {
+                    intent.setComponent(ComponentName.unflattenFromString("com.snapchat.android/.LandingPageActivity"));
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                } else {
+                    createXposedDialog().show();
+                    finish = false;
+                }
             }
         }
         //call finish at the end to close the wrapper
+        if (finish) {
+            finish();
+        }
+    }
+
+    /**
+     * Pretty much self-explanatory, creates a dialog saying the module is not activated.
+     * @return The created dialog
+     */
+    private AlertDialog createXposedDialog() {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(this, android.R.style.Theme_DeviceDefault_Dialog));
+        dialogBuilder.setTitle(getString(R.string.app_name));
+        dialogBuilder.setMessage(getString(R.string.module_not_enabled));
+        dialogBuilder.setPositiveButton(getString(R.string.open_xposed_installer), this);
+        dialogBuilder.setNegativeButton(getString(R.string.close), this);
+        return dialogBuilder.create();
+    }
+
+    @Override
+    public void onClick(DialogInterface dialog, int which) {
+        if (which == AlertDialog.BUTTON_POSITIVE) {
+            Utils.openXposedInstaller(ReceiveMediaActivity.this);
+        }
         finish();
     }
 }

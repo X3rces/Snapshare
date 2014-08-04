@@ -75,25 +75,29 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
     }
 
     public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
+        // Set isModuleEnabled to true for detection whether Snapshare is enabled
+        if (lpparam.packageName.equals(Commons.PACKAGE_NAME)) {
+            findAndHookMethod("com.p1ngu1n.snapshare.Utils", lpparam.classLoader, "isModuleEnabled", XC_MethodReplacement.returnConstant(true));
+        }
+
         if (!lpparam.packageName.equals("com.snapchat.android"))
             return;
 
-        Utils.refreshPreferences();
+        XposedUtils.refreshPreferences();
 
         /** thanks to KeepChat for the following snippet: **/
         try {
-            Utils.xposedDebug("----------------- SNAPSHARE HOOKED -----------------", false);
+            XposedUtils.log("----------------- SNAPSHARE HOOKED -----------------", false);
             Object activityThread = callStaticMethod(findClass("android.app.ActivityThread", null), "currentActivityThread");
             Context context = (Context) callMethod(activityThread, "getSystemContext");
 
-            int version = context.getPackageManager().getPackageInfo(lpparam.packageName, 0).versionCode;
-            SNAPCHAT_VERSION = Obfuscator.getVersion(version);
-
             PackageInfo piSnapChat = context.getPackageManager().getPackageInfo(lpparam.packageName, 0);
-            Utils.xposedDebug("SnapChat Version: " + piSnapChat.versionName + " (" + piSnapChat.versionCode + ")", false);
+            XposedUtils.log("SnapChat Version: " + piSnapChat.versionName + " (" + piSnapChat.versionCode + ")", false);
 
-            PackageInfo piSnapshare = context.getPackageManager().getPackageInfo(this.getClass().getPackage().getName(), 0);
-            Utils.xposedDebug("Snapshare Version: " + piSnapshare.versionName + " (" + piSnapshare.versionCode + ")\n", false);
+            PackageInfo piSnapshare = context.getPackageManager().getPackageInfo(Commons.PACKAGE_NAME, 0);
+            XposedUtils.log("Snapshare Version: " + piSnapshare.versionName + " (" + piSnapshare.versionCode + ")\n", false);
+
+            SNAPCHAT_VERSION = Obfuscator.getVersion(piSnapChat.versionCode);
         }
         catch (Exception e) {
             XposedBridge.log("Snapshare: exception while trying to get version info. (" + e.getMessage() + ")");
@@ -110,14 +114,14 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
         findAndHookMethod("com.snapchat.android.LandingPageActivity", lpparam.classLoader, "onCreate", Bundle.class, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                Utils.refreshPreferences();
-                Utils.xposedDebug("----------------- SNAPSHARE STARTED -----------------", false);
+                XposedUtils.refreshPreferences();
+                XposedUtils.log("----------------- SNAPSHARE STARTED -----------------", false);
                 final Activity activity = (Activity) param.thisObject;
                 // Get intent, action and MIME type
                 Intent intent = activity.getIntent();
                 String type = intent.getType();
                 String action = intent.getAction();
-                Utils.xposedDebug("Intent type: " + type + ", intent action:" + action);
+                XposedUtils.log("Intent type: " + type + ", intent action:" + action);
 
                 // Check if this is a normal launch of Snapchat or actually called by Snapshare and if loaded from recents
                 if (type != null && Intent.ACTION_SEND.equals(action) && (intent.getFlags() & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) == 0) {
@@ -130,25 +134,25 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                      * of doing the media initialization again. This check is necessary
                      * because onCreate() is also called if the phone is just rotated. */
                     if (initializedUri == mediaUri) {
-                        Utils.xposedDebug("Media already initialized, exit onCreate() hook");
+                        XposedUtils.log("Media already initialized, exit onCreate() hook");
                         return;
                     }
 
                     ContentResolver contentResolver = activity.getContentResolver();
 
                     if (type.startsWith("image/")) {
-                        Utils.xposedDebug("Image URI: " + mediaUri.toString());
+                        XposedUtils.log("Image URI: " + mediaUri.toString());
                         try {
                             /* TODO: use BitmapFactory with inSampleSize magic to avoid using too much memory,
                              * see http://developer.android.com/training/displaying-bitmaps/load-bitmap.html#load-bitmap */
                             Bitmap bitmap = MediaStore.Images.Media.getBitmap(contentResolver, mediaUri);
                             int width = bitmap.getWidth();
                             int height = bitmap.getHeight();
-                            Utils.xposedDebug("Image shared, size: " + width + " x " + height + " (w x h)");
+                            XposedUtils.log("Image shared, size: " + width + " x " + height + " (w x h)");
 
                             // Landscape images have to be rotated 90 degrees clockwise for Snapchat to be displayed correctly
                             if (width > height && Commons.ROTATION_MODE != Commons.ROTATION_NONE) {
-                                Utils.xposedDebug("Landscape image detected, rotating image " + Commons.ROTATION_MODE + " degrees");
+                                XposedUtils.log("Landscape image detected, rotating image " + Commons.ROTATION_MODE + " degrees");
                                 Matrix matrix = new Matrix();
                                 matrix.setRotate(Commons.ROTATION_MODE);
                                 bitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
@@ -172,10 +176,10 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                             int dWidth = dm.widthPixels;
                             int dHeight = dm.heightPixels;
 
-                            Utils.xposedDebug("Display metrics: " + dWidth + " x " + dHeight + " (w x h)");
+                            XposedUtils.log("Display metrics: " + dWidth + " x " + dHeight + " (w x h)");
                             // DisplayMetrics' values depend on the phone's tilt, so we normalize them to Portrait mode
                             if (dWidth > dHeight) {
-                                Utils.xposedDebug("Normalizing display metrics to Portrait mode.");
+                                XposedUtils.log("Normalizing display metrics to Portrait mode.");
                                 int temp = dWidth;
                                 //noinspection SuspiciousNameCombination
                                 dWidth = dHeight;
@@ -187,12 +191,12 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                                 if (imageToDisplayRatio > 0) {
                                     // i.e., width/height > dWidth/dHeight, so have to crop from left and right:
                                     int newWidth = (dWidth * height / dHeight);
-                                    Utils.xposedDebug("New width after cropping left and right: " + newWidth);
+                                    XposedUtils.log("New width after cropping left and right: " + newWidth);
                                     bitmap = Bitmap.createBitmap(bitmap, (width - newWidth) / 2, 0, newWidth, height);
                                 } else if (imageToDisplayRatio < 0) {
                                     // i.e., width/height < dWidth/dHeight, so have to crop from top and bottom:
                                     int newHeight = (dHeight * width / dWidth);
-                                    Utils.xposedDebug("New height after cropping top and bottom: " + newHeight);
+                                    XposedUtils.log("New height after cropping top and bottom: " + newHeight);
                                     bitmap = Bitmap.createBitmap(bitmap, 0, (height - newHeight) / 2, width, newHeight);
                                 }
 
@@ -200,7 +204,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                                  and are going to scale it down. We make this distinction because we don't wanna
                                  scale the image up if it is smaller than the Display rectangle. */
                                 boolean largeImage = ((width > dWidth) & (height > dHeight));
-                                Utils.xposedDebug(largeImage ? "Large image, scaling down" : "Small image");
+                                XposedUtils.log(largeImage ? "Large image, scaling down" : "Small image");
                                 if (largeImage) {
                                     bitmap = Bitmap.createScaledBitmap(bitmap, dWidth, dHeight, true);
                                 }
@@ -232,9 +236,9 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                             // Make Snapchat show the image
                             media.setContent(bitmap);
                         } catch (FileNotFoundException e) {
-                            Utils.xposedDebug("File not found!\n" + e.getMessage());
+                            XposedUtils.log("File not found!\n" + e.getMessage());
                         } catch (IOException e) {
-                            Utils.xposedDebug("IO Error!\n" + e.getMessage());
+                            XposedUtils.log("IO Error!\n" + e.getMessage());
                         }
                     }
                     else if (type.startsWith("video/")) {
@@ -243,15 +247,15 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                         if (URLUtil.isFileUrl(mediaUri.toString()))
                         {
                             videoUri = mediaUri;
-                            Utils.xposedDebug("Already had File URI: " + mediaUri.toString());
+                            XposedUtils.log("Already had File URI: " + mediaUri.toString());
                         }
                         // No file URI, so we have to convert it
                         else {
                             videoUri = Utils.convertContentToFileUri(contentResolver, mediaUri);
                             if (videoUri != null) {
-                                Utils.xposedDebug("Converted content URI to file URI " + videoUri.toString());
+                                XposedUtils.log("Converted content URI to file URI " + videoUri.toString());
                             } else {
-                                Utils.xposedDebug("Couldn't resolve URI to file:// scheme: " + mediaUri.toString());
+                                XposedUtils.log("Couldn't resolve URI to file:// scheme: " + mediaUri.toString());
                             }
                         }
 
@@ -261,7 +265,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                             if (Commons.CHECK_SIZE && fileSize > Commons.MAX_VIDEO_SIZE) {
                                 String readableFileSize = Utils.formatBytes(fileSize);
                                 String readableMaxSize = Utils.formatBytes(Commons.MAX_VIDEO_SIZE);
-                                Utils.xposedDebug("Video too big (" + readableFileSize + ")");
+                                XposedUtils.log("Video too big (" + readableFileSize + ")");
                                 // Inform the user with a dialog
                                 AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity);
                                 dialogBuilder.setTitle(mResources.getString(R.string.app_name));
@@ -291,7 +295,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                     initializedUri = mediaUri;
                 }
                 else {
-                    Utils.xposedDebug("Regular call of Snapchat.");
+                    XposedUtils.log("Regular call of Snapchat.");
                     initializedUri = null;
                 }
             }
@@ -314,7 +318,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 if(initializedUri == null) return; // We don't have an image to send, so don't try to send one
-                Utils.xposedDebug("Doing it's magic!");
+                XposedUtils.log("Doing it's magic!");
                 Object snapCaptureEvent;
 
                 // new stuff for 4.1.10: Class called Snapbryo (gross)
@@ -344,13 +348,13 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
         findAndHookMethod("com.snapchat.android.SnapPreviewFragment", lpparam.classLoader, Obfuscator.ON_BACK_PRESS.getValue(SNAPCHAT_VERSION), new XC_MethodReplacement() {
             @Override
             protected Object replaceHookedMethod(MethodHookParam methodHookParam) throws Throwable {
-                Utils.xposedDebug("Prevented video deletion");
+                XposedUtils.log("Prevented video deletion");
                 return null;
             }
         });
 
         if (Commons.TIMBER) {
-            Utils.xposedDebug("Timber enabled");
+            XposedUtils.log("Timber enabled");
             findAndHookMethod("com.snapchat.android.Timber", lpparam.classLoader, "a", XC_MethodReplacement.returnConstant(true));
             findAndHookMethod("com.snapchat.android.Timber", lpparam.classLoader, "b", XC_MethodReplacement.returnConstant(true));
             findAndHookMethod("com.snapchat.android.Timber", lpparam.classLoader, "c", XC_MethodReplacement.returnConstant(true));
