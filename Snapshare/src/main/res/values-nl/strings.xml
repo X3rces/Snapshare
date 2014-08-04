@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name" translatable="false">Snapshare</string>
     <string name="xposed_description">Stuur afbeeldingen en video\'s via Snapchat direct vanuit delen menu.</string>
     <string name="snapshare_settings">Snapshare Instellingen</string>
     <string name="developer_settings">Ontwikkelaarsinstellingen</string>
@@ -15,29 +14,17 @@
     <string name="pref_images">Afbeeldingen</string>
 
     <string name="pref_rotation_title">Beeldrotatie modus</string>
-    <string name="pref_rotation_default" translatable="false">90</string>
     <string-array name="pref_rotation_entries">
         <item>Niet roteren</item>
         <item>Met de klok mee (90 graden)</item>
         <item>Tegen de klok in (-90 graden)</item>
     </string-array>
-    <string-array name="pref_rotation_values" translatable="false">
-        <item>0</item>
-        <item>90</item>
-        <item>270</item>
-    </string-array>
 
     <string name="pref_adjustment_title">Afbeeldingscorrectie methode</string>
-    <string name="pref_adjustment_default" translatable="false">0</string>
     <string-array name="pref_adjustment_entries">
         <item>Bijsnijden</item>
         <item>Schalen</item>
         <item>Geen</item>
-    </string-array>
-    <string-array name="pref_adjustment_values" translatable="false">
-        <item>0</item>
-        <item>1</item>
-        <item>2 </item>
     </string-array>
 
     <!-- Other settings -->
@@ -53,7 +40,6 @@
 
     <!-- About section -->
     <string name="pref_about">Over</string>
-    <string name="pref_about_title" translatable="false">Snapshare v%1$s</string>
     <string name="pref_about_summary">Snapshare is vrijgegeven onder de GPLv3 licentie.</string>
 
     <!-- Developer settings -->
