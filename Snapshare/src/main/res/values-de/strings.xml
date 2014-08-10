@@ -1,15 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:locale="en"
+    tools:ignore="MissingTranslation">
 
-    <string name="app_name" translatable="false">Snapshare</string>
+      <string name="app_name" translatable="false">Snapshare</string>
     <string name="xposed_description">Sende eine Bild oder Video über Snapchat direkt vom Teilen Menü.</string>
     <string name="snapshare_settings">Snapshare Einstellungen</string>
     <string name="developer_settings">Entwickler Einstellungen</string>
+    
+    <!-- Dialogs -->
+    <string name="module_not_enabled">Snapshare ist nicht aktiviert. Bitte aktivieren Sie es im Xposed Installer und starten Sie ihr Gerät neu.</string>
+     <string name="size_error">"Das zu teilende Video ist zu groß (%1$s), es wird möglicherweise nicht gesendet. Snapchat unterstützt nur Dateien bis zu %2$s."</string>
+    <string name="unable_open_xposed">Xposed Installer kann nicht geöffnet werden, ist er installiert?</string>
 
-    <!-- Size Dialog -->
-    <string name="size_error">"Das zu teilende Video ist zu groß (%1$s), es wird möglicherweise nicht gesendet. Snapchat unterstützt nur Dateien bis zu %2$s."</string>
+    <string name="open_xposed_installer">Xposed Installer öffnen</string>
     <string name="continue_anyway">Trotzdem fortfahren</string>
     <string name="go_back">Zurück</string>
+    <string name="close">Schließen</string>
 
     <!-- Image settings -->
     <string name="pref_images">Bilder</string>
