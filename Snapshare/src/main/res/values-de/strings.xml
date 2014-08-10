@@ -4,7 +4,7 @@
     tools:locale="en"
     tools:ignore="MissingTranslation">
 
-      <string name="app_name" translatable="false">Snapshare</string>
+    <string name="app_name" translatable="false">Snapshare</string>
     <string name="xposed_description">Sende eine Bild oder Video über Snapchat direkt vom Teilen Menü.</string>
     <string name="snapshare_settings">Snapshare Einstellungen</string>
     <string name="developer_settings">Entwickler Einstellungen</string>
