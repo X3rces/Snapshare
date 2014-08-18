@@ -32,7 +32,6 @@ import android.content.res.XModuleResources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
@@ -40,10 +39,20 @@ import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import android.webkit.URLUtil;
 
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.boxes.TrackBox;
+import com.coremedia.iso.boxes.TrackHeaderBox;
+import com.googlecode.mp4parser.DataSource;
+import com.googlecode.mp4parser.FileDataSourceImpl;
+import com.googlecode.mp4parser.util.Matrix;
+
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.channels.FileChannel;
+import java.util.List;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
@@ -153,7 +162,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                             // Landscape images have to be rotated 90 degrees clockwise for Snapchat to be displayed correctly
                             if (width > height && Commons.ROTATION_MODE != Commons.ROTATION_NONE) {
                                 XposedUtils.log("Landscape image detected, rotating image " + Commons.ROTATION_MODE + " degrees");
-                                Matrix matrix = new Matrix();
+                                android.graphics.Matrix matrix = new android.graphics.Matrix();
                                 matrix.setRotate(Commons.ROTATION_MODE);
                                 bitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
                                 // resetting width and height
@@ -215,7 +224,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                                 Bitmap background = Bitmap.createBitmap(dWidth, dHeight, Bitmap.Config.ARGB_8888);
                                 background.eraseColor(Color.BLACK);
                                 Canvas canvas = new Canvas(background);
-                                Matrix transform = new Matrix();
+                                android.graphics.Matrix transform = new android.graphics.Matrix();
                                 float scale = dWidth / (float)width;
                                 float xTrans = 0;
                                 if(Commons.ADJUST_METHOD == Commons.ADJUST_NONE) {
@@ -244,8 +253,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                     else if (type.startsWith("video/")) {
                         Uri videoUri;
                         // Snapchat expects the video URI to be in the file:// scheme, not content:// scheme
-                        if (URLUtil.isFileUrl(mediaUri.toString()))
-                        {
+                        if (URLUtil.isFileUrl(mediaUri.toString())) {
                             videoUri = mediaUri;
                             XposedUtils.log("Already had File URI: " + mediaUri.toString());
                         }
@@ -260,7 +268,60 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                         }
 
                         if (videoUri != null) {
-                            long fileSize = new File(videoUri.getPath()).length();
+                            File videoFile = new File(videoUri.getPath());
+
+                            try {
+                                DataSource dataSource = new FileDataSourceImpl(videoFile);
+                                IsoFile isoFile = new IsoFile(dataSource);
+
+                                List<TrackBox> trackBoxes = isoFile.getMovieBox().getBoxes(TrackBox.class);
+                                // Iterate through all tracks until the track is a video track (type equals 'vide')
+                                for (TrackBox trackBox : trackBoxes) {
+                                    if (trackBox.getMediaBox().getHandlerBox().getHandlerType().equals("vide")) {
+                                        TrackHeaderBox trackHeaderBox = trackBox.getTrackHeaderBox();
+                                        // Get the dimensions of the video
+                                        double width = trackHeaderBox.getWidth();
+                                        double height = trackHeaderBox.getHeight();
+                                        XposedUtils.log("Video resolution: " + width + " x " + height + " (w x h)");
+
+                                        // Determine the way to rotate
+                                        Matrix matrix = trackHeaderBox.getMatrix();
+                                        if (Commons.ROTATION_MODE != Commons.ROTATION_NONE) {
+                                            if (width > height) {
+                                                if (Commons.ROTATION_MODE == Commons.ROTATION_CW) {
+                                                    matrix = Matrix.ROTATE_90;
+                                                } else if (Commons.ROTATION_MODE == Commons.ROTATION_CCW) {
+                                                    matrix = Matrix.ROTATE_270;
+                                                }
+                                            } else {
+                                                matrix = Matrix.ROTATE_0;
+                                            }
+                                            XposedUtils.log("Changing rotation from " + trackHeaderBox.getMatrix() + " to " + matrix);
+                                        } else {
+                                            XposedUtils.log("Keeping rotation at " + matrix);
+                                        }
+
+                                        // Set the rotation matrix
+                                        trackHeaderBox.setMatrix(matrix);
+                                        // Write the video to a temp file
+                                        File tempFile = File.createTempFile("snapshare_video", null);
+                                        FileOutputStream fos = new FileOutputStream(tempFile);
+                                        FileChannel fc = fos.getChannel();
+                                        isoFile.writeContainer(fc);
+                                        fc.close();
+                                        fos.close();
+
+                                        videoUri = Uri.fromFile(tempFile);
+                                        videoFile = tempFile;
+                                        XposedUtils.log("Temporary file path: " + videoUri);
+                                        break;
+                                    }
+                                }
+                            } catch (Exception e) {
+                                XposedUtils.log(e);
+                            }
+
+                            long fileSize = videoFile.length();
                             // Get size of video and compare to the maximum size
                             if (Commons.CHECK_SIZE && fileSize > Commons.MAX_VIDEO_SIZE) {
                                 String readableFileSize = Utils.formatBytes(fileSize);
@@ -341,24 +402,16 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
             }
         });
 
-
-        /**
-         * Stop snapchat deleting our video when the view is cancelled.
-         */
-        findAndHookMethod("com.snapchat.android.SnapPreviewFragment", lpparam.classLoader, Obfuscator.ON_BACK_PRESS.getValue(SNAPCHAT_VERSION), new XC_MethodReplacement() {
-            @Override
-            protected Object replaceHookedMethod(MethodHookParam methodHookParam) throws Throwable {
-                XposedUtils.log("Prevented video deletion");
-                return null;
-            }
-        });
-
+        // Enable Snapchat's internal debugging class
         if (Commons.TIMBER) {
             XposedUtils.log("Timber enabled");
-            findAndHookMethod("com.snapchat.android.Timber", lpparam.classLoader, "a", XC_MethodReplacement.returnConstant(true));
-            findAndHookMethod("com.snapchat.android.Timber", lpparam.classLoader, "b", XC_MethodReplacement.returnConstant(true));
-            findAndHookMethod("com.snapchat.android.Timber", lpparam.classLoader, "c", XC_MethodReplacement.returnConstant(true));
-            findAndHookMethod("com.snapchat.android.Timber", lpparam.classLoader, "d", XC_MethodReplacement.returnConstant("SnapchatTimber"));
+            String timberClass = "com.snapchat.android.Timber";
+            // Return true when checking whether it should debug
+            findAndHookMethod(timberClass, lpparam.classLoader, "a", XC_MethodReplacement.returnConstant(true));
+            findAndHookMethod(timberClass, lpparam.classLoader, "b", XC_MethodReplacement.returnConstant(true));
+            findAndHookMethod(timberClass, lpparam.classLoader, "c", XC_MethodReplacement.returnConstant(true));
+            // Usually returns the class name to use as the Log Tag, however we want a custom one
+            findAndHookMethod(timberClass, lpparam.classLoader, "d", XC_MethodReplacement.returnConstant("SnapchatTimber"));
         }
 
     }

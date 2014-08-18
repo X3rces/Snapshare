@@ -18,10 +18,10 @@
     <string name="go_back">Zurück</string>
     <string name="close">Schließen</string>
 
-    <!-- Image settings -->
-    <string name="pref_images">Bilder</string>
+    <!-- Media settings -->
+    <string name="pref_media">Medien</string>
 
-    <string name="pref_rotation_title">Bilder drehen</string>
+    <string name="pref_rotation_title">Drehen</string>
     <string-array name="pref_rotation_entries">
         <item>Nicht drehen</item>
         <item>Im Uhrzeigersinn (90 Grad)</item>

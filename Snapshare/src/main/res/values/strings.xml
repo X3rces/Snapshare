@@ -19,10 +19,10 @@
     <string name="go_back">Go back</string>
     <string name="close">Close</string>
 
-    <!-- Image settings -->
-    <string name="pref_images">Images</string>
+    <!-- Media settings -->
+    <string name="pref_media">Media</string>
 
-    <string name="pref_rotation_title">Image rotation mode</string>
+    <string name="pref_rotation_title">Rotation mode</string>
     <string name="pref_rotation_default" translatable="false">90</string>
     <string-array name="pref_rotation_entries">
         <item>Don\'t rotate</item>

@@ -14,10 +14,10 @@
     <string name="go_back">Ga terug</string>
     <string name="close">Sluiten</string>
     
-    <!-- Image settings -->
-    <string name="pref_images">Afbeeldingen</string>
+    <!-- Media settings -->
+    <string name="pref_media">Media</string>
 
-    <string name="pref_rotation_title">Beeldrotatie modus</string>
+    <string name="pref_rotation_title">Rotatie modus</string>
     <string-array name="pref_rotation_entries">
         <item>Niet roteren</item>
         <item>Met de klok mee (90 graden)</item>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <PreferenceCategory android:title="@string/pref_images">
+    <PreferenceCategory android:title="@string/pref_media">
         <ListPreference
             android:defaultValue="@string/pref_rotation_default"
             android:dialogTitle="@string/pref_rotation_title"
