@@ -26,8 +26,8 @@
     <string name="pref_rotation_default" translatable="false">90</string>
     <string-array name="pref_rotation_entries">
         <item>Don\'t rotate</item>
-        <item>Clockwise (90 degrees)</item>
-        <item>Counterclockwise (-90 degrees)</item>
+        <item>Clockwise (90°)</item>
+        <item>Counterclockwise (-90°)</item>
     </string-array>
     <string-array name="pref_rotation_values" translatable="false">
         <item>0</item>
@@ -68,7 +68,7 @@
     <string name="pref_donate_summary">Support me, buy me a beer using PayPal. Donations are highly appreciated.</string>
 
     <string name="pref_support_title">Support</string>
-    <string name="pref_support_summary">Navigate to the XDA-thread, read the OP first if you\'re facing problems.</string>
+    <string name="pref_support_summary">Navigate to the XDA-thread, please read the OP first if you\'re facing problems.</string>
 
     <!-- Developer settings -->
     <string name="pref_miscellaneous">Miscellaneous</string>
