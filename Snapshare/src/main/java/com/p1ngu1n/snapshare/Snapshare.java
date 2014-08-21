@@ -52,6 +52,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.channels.FileChannel;
+import java.text.DecimalFormat;
 import java.util.List;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
@@ -210,8 +211,8 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                                 }
 
                                 /* If the image properly covers the Display rectangle, we mark it as a "large" image
-                                 and are going to scale it down. We make this distinction because we don't wanna
-                                 scale the image up if it is smaller than the Display rectangle. */
+                                 * and are going to scale it down. We make this distinction because we don't wanna
+                                 * scale the image up if it is smaller than the Display rectangle. */
                                 boolean largeImage = ((width > dWidth) & (height > dHeight));
                                 XposedUtils.log(largeImage ? "Large image, scaling down" : "Small image");
                                 if (largeImage) {
@@ -256,21 +257,24 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                         if (URLUtil.isFileUrl(mediaUri.toString())) {
                             videoUri = mediaUri;
                             XposedUtils.log("Already had File URI: " + mediaUri.toString());
-                        }
-                        // No file URI, so we have to convert it
-                        else {
+                        } else { // No file URI, so we have to convert it
                             videoUri = Utils.convertContentToFileUri(contentResolver, mediaUri);
                             if (videoUri != null) {
                                 XposedUtils.log("Converted content URI to file URI " + videoUri.toString());
                             } else {
                                 XposedUtils.log("Couldn't resolve URI to file:// scheme: " + mediaUri.toString());
+                                return;
                             }
                         }
 
-                        if (videoUri != null) {
-                            File videoFile = new File(videoUri.getPath());
+                        File videoFile = new File(videoUri.getPath());
+                        File tempFile = File.createTempFile("snapshare_video", null);
 
-                            try {
+                        try {
+                            if (Commons.ROTATION_MODE == Commons.ROTATION_NONE) {
+                                XposedUtils.log("Rotation disabled, creating a temporary copy");
+                                Utils.copyFile(videoFile, tempFile);
+                            } else {
                                 DataSource dataSource = new FileDataSourceImpl(videoFile);
                                 IsoFile isoFile = new IsoFile(dataSource);
 
@@ -282,69 +286,70 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                                         // Get the dimensions of the video
                                         double width = trackHeaderBox.getWidth();
                                         double height = trackHeaderBox.getHeight();
-                                        XposedUtils.log("Video resolution: " + width + " x " + height + " (w x h)");
+                                        DecimalFormat format = new DecimalFormat("#");
+                                        XposedUtils.log("Video resolution: " + format.format(width) + " x " + format.format(height) + " (w x h)");
 
                                         // Determine the way to rotate
-                                        Matrix matrix = trackHeaderBox.getMatrix();
-                                        if (Commons.ROTATION_MODE != Commons.ROTATION_NONE) {
-                                            if (width > height) {
-                                                if (Commons.ROTATION_MODE == Commons.ROTATION_CW) {
-                                                    matrix = Matrix.ROTATE_90;
-                                                } else if (Commons.ROTATION_MODE == Commons.ROTATION_CCW) {
-                                                    matrix = Matrix.ROTATE_270;
-                                                }
+                                        Matrix matrix;
+                                        if (width > height) {
+                                            if (Commons.ROTATION_MODE == Commons.ROTATION_CW) {
+                                                matrix = Matrix.ROTATE_90;
                                             } else {
-                                                matrix = Matrix.ROTATE_0;
+                                                matrix = Matrix.ROTATE_270;
                                             }
-                                            XposedUtils.log("Changing rotation from " + trackHeaderBox.getMatrix() + " to " + matrix);
                                         } else {
-                                            XposedUtils.log("Keeping rotation at " + matrix);
+                                            matrix = Matrix.ROTATE_0;
                                         }
 
-                                        // Set the rotation matrix
-                                        trackHeaderBox.setMatrix(matrix);
-                                        // Write the video to a temp file
-                                        File tempFile = File.createTempFile("snapshare_video", null);
-                                        FileOutputStream fos = new FileOutputStream(tempFile);
-                                        FileChannel fc = fos.getChannel();
-                                        isoFile.writeContainer(fc);
-                                        fc.close();
-                                        fos.close();
-
-                                        videoUri = Uri.fromFile(tempFile);
-                                        videoFile = tempFile;
-                                        XposedUtils.log("Temporary file path: " + videoUri);
+                                        if (matrix.equals(trackHeaderBox.getMatrix())) {
+                                            XposedUtils.log("Keeping rotation at " + matrixToString(matrix) + ", just creating a copy");
+                                            Utils.copyFile(videoFile, tempFile);
+                                        } else {
+                                            XposedUtils.log("Rotation changed from " + matrixToString(trackHeaderBox.getMatrix()) + " to " + matrixToString(matrix));
+                                            // Set the rotation matrix
+                                            trackHeaderBox.setMatrix(matrix);
+                                            // Write the video to the temp file
+                                            FileOutputStream fos = new FileOutputStream(tempFile);
+                                            FileChannel fc = fos.getChannel();
+                                            isoFile.writeContainer(fc);
+                                            fc.close();
+                                            fos.close();
+                                        }
                                         break;
                                     }
                                 }
-                            } catch (Exception e) {
-                                XposedUtils.log(e);
                             }
 
-                            long fileSize = videoFile.length();
-                            // Get size of video and compare to the maximum size
-                            if (Commons.CHECK_SIZE && fileSize > Commons.MAX_VIDEO_SIZE) {
-                                String readableFileSize = Utils.formatBytes(fileSize);
-                                String readableMaxSize = Utils.formatBytes(Commons.MAX_VIDEO_SIZE);
-                                XposedUtils.log("Video too big (" + readableFileSize + ")");
-                                // Inform the user with a dialog
-                                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity);
-                                dialogBuilder.setTitle(mResources.getString(R.string.app_name));
-                                dialogBuilder.setMessage(mResources.getString(R.string.size_error, readableFileSize, readableMaxSize));
-                                dialogBuilder.setPositiveButton(mResources.getString(R.string.continue_anyway), new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        dialog.cancel();
-                                    }
-                                });
-                                dialogBuilder.setNegativeButton(mResources.getString(R.string.go_back), new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        activity.finish();
-                                    }
-                                });
-                                dialogBuilder.show();
-                            }
-                            media.setContent(videoUri);
+                            videoUri = Uri.fromFile(tempFile);
+                            XposedUtils.log("Temporary file path: " + videoUri);
+                        } catch (Exception e) {
+                            XposedUtils.log(e);
+                            return;
                         }
+
+                        long fileSize = tempFile.length();
+                        // Get size of video and compare to the maximum size
+                        if (Commons.CHECK_SIZE && fileSize > Commons.MAX_VIDEO_SIZE) {
+                            String readableFileSize = Utils.formatBytes(fileSize);
+                            String readableMaxSize = Utils.formatBytes(Commons.MAX_VIDEO_SIZE);
+                            XposedUtils.log("Video too big (" + readableFileSize + ")");
+                            // Inform the user with a dialog
+                            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity);
+                            dialogBuilder.setTitle(mResources.getString(R.string.app_name));
+                            dialogBuilder.setMessage(mResources.getString(R.string.size_error, readableFileSize, readableMaxSize));
+                            dialogBuilder.setPositiveButton(mResources.getString(R.string.continue_anyway), new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            });
+                            dialogBuilder.setNegativeButton(mResources.getString(R.string.go_back), new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    activity.finish();
+                                }
+                            });
+                            dialogBuilder.show();
+                        }
+                        media.setContent(videoUri);
                     }
                     /* Finally the image or video is marked as initialized to prevent reinitialisation of
                      * the SnapCapturedEvent in case of a screen rotation (because onCreate() is then called).
@@ -414,6 +419,20 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
             findAndHookMethod(timberClass, lpparam.classLoader, "d", XC_MethodReplacement.returnConstant("SnapchatTimber"));
         }
 
+    }
+
+    private static String matrixToString(Matrix matrix) {
+        if (matrix.equals(Matrix.ROTATE_0)) {
+            return "0°";
+        } else if (matrix.equals(Matrix.ROTATE_90)) {
+            return "90°";
+        } else if (matrix.equals(Matrix.ROTATE_180)) {
+            return "180°";
+        } else if (matrix.equals(Matrix.ROTATE_270)) {
+            return "270°";
+        } else {
+            return "(unknown)°";
+        }
     }
 
     /** {@code XposedHelpers.callMethod()} cannot call methods of the super class of an object, because it

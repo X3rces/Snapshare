@@ -29,6 +29,11 @@ import android.provider.MediaStore;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class Utils {
     /**
@@ -67,6 +72,29 @@ public class Utils {
     }
 
     /**
+     * Creates a copy of a file
+     * @param source The file you want to copy
+     * @param destination The destination you want to copy the file to
+     * @throws IOException An error occurred while copying the file
+     */
+    public static void copyFile(File source, File destination) throws IOException {
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+            in = new FileInputStream(source);
+            out = new FileOutputStream(destination);
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = in.read(buffer)) > 0) {
+                out.write(buffer, 0, length);
+            }
+        } finally {
+            in.close();
+            out.close();
+        }
+    }
+
+    /**
      * Checks whether Snapshare is enabled. If it's enabled, Xposed should hook this method and return true.
      * @return If Snapshare is enabled or not
      */
@@ -74,6 +102,10 @@ public class Utils {
         return false;
     }
 
+    /**
+     * Open Xposed Installer
+     * @param activity The activity to start the intent on
+     */
     public static void openXposedInstaller(Activity activity) {
         Intent intent = activity.getPackageManager().getLaunchIntentForPackage("de.robv.android.xposed.installer");
         if (intent == null) {
