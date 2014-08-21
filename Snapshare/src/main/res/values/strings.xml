@@ -64,6 +64,12 @@
     <string name="pref_about_title" translatable="false">Snapshare v%1$s</string>
     <string name="pref_about_summary">Snapshare is released under the GPLv3 license.</string>
 
+    <string name="pref_donate_title">Donate</string>
+    <string name="pref_donate_summary">Support me, buy me a beer using PayPal. Donations are highly appreciated.</string>
+
+    <string name="pref_support_title">Support</string>
+    <string name="pref_support_summary">Navigate to the XDA-thread, read the OP first if you\'re facing problems.</string>
+
     <!-- Developer settings -->
     <string name="pref_miscellaneous">Miscellaneous</string>
 

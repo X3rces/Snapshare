@@ -40,6 +40,24 @@
             android:key="pref_about"
             android:title="@string/app_name"
             android:summary="@string/pref_about_summary" />
+
+        <Preference
+            android:key="pref_donate"
+            android:title="@string/pref_donate_title"
+            android:summary="@string/pref_donate_summary">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=ATAND4ZD4HZ62"/>
+         </Preference>
+
+        <Preference
+            android:key="pref_support"
+            android:title="@string/pref_support_title"
+            android:summary="@string/pref_support_summary">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="http://forum.xda-developers.com/xposed/modules/mod-snapshare-share-images-videos-t2815786"/>
+        </Preference>
     </PreferenceCategory>
 
 </PreferenceScreen>

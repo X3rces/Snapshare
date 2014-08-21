@@ -46,6 +46,12 @@
     <string name="pref_about">Over</string>
     <string name="pref_about_summary">Snapshare is vrijgegeven onder de GPLv3 licentie.</string>
 
+    <string name="pref_donate_title">Doneer</string>
+    <string name="pref_donate_summary">Steun mij, koop een biertje voor me via PayPal.</string>
+
+    <string name="pref_support_title">Ondersteuning</string>
+    <string name="pref_support_summary">Ga naar de XDA-thread, lees de OP eerst als je problemen ondervind.</string>
+
     <!-- Developer settings -->
     <string name="pref_miscellaneous">Diverse</string>
 
