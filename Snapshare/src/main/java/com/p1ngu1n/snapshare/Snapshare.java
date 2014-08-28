@@ -45,6 +45,8 @@ import com.coremedia.iso.boxes.TrackHeaderBox;
 import com.googlecode.mp4parser.DataSource;
 import com.googlecode.mp4parser.FileDataSourceImpl;
 import com.googlecode.mp4parser.util.Matrix;
+import com.p1ngu1n.snapshare.Util.CommonUtils;
+import com.p1ngu1n.snapshare.Util.XposedUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -87,7 +89,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
     public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
         // Set isModuleEnabled to true for detection whether Snapshare is enabled
         if (lpparam.packageName.equals(Commons.PACKAGE_NAME)) {
-            findAndHookMethod("com.p1ngu1n.snapshare.Utils", lpparam.classLoader, "isModuleEnabled", XC_MethodReplacement.returnConstant(true));
+            findAndHookMethod("com.p1ngu1n.snapshare.Util.CommonUtils", lpparam.classLoader, "isModuleEnabled", XC_MethodReplacement.returnConstant(true));
         }
 
         if (!lpparam.packageName.equals("com.snapchat.android"))
@@ -258,7 +260,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                             videoUri = mediaUri;
                             XposedUtils.log("Already had File URI: " + mediaUri.toString());
                         } else { // No file URI, so we have to convert it
-                            videoUri = Utils.convertContentToFileUri(contentResolver, mediaUri);
+                            videoUri = CommonUtils.convertContentToFileUri(contentResolver, mediaUri);
                             if (videoUri != null) {
                                 XposedUtils.log("Converted content URI to file URI " + videoUri.toString());
                             } else {
@@ -273,7 +275,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                         try {
                             if (Commons.ROTATION_MODE == Commons.ROTATION_NONE) {
                                 XposedUtils.log("Rotation disabled, creating a temporary copy");
-                                Utils.copyFile(videoFile, tempFile);
+                                CommonUtils.copyFile(videoFile, tempFile);
                             } else {
                                 DataSource dataSource = new FileDataSourceImpl(videoFile);
                                 IsoFile isoFile = new IsoFile(dataSource);
@@ -303,7 +305,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
 
                                         if (matrix.equals(trackHeaderBox.getMatrix())) {
                                             XposedUtils.log("Keeping rotation at " + matrixToString(matrix) + ", just creating a copy");
-                                            Utils.copyFile(videoFile, tempFile);
+                                            CommonUtils.copyFile(videoFile, tempFile);
                                         } else {
                                             XposedUtils.log("Rotation changed from " + matrixToString(trackHeaderBox.getMatrix()) + " to " + matrixToString(matrix));
                                             // Set the rotation matrix
@@ -330,8 +332,8 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                         long fileSize = tempFile.length();
                         // Get size of video and compare to the maximum size
                         if (Commons.CHECK_SIZE && fileSize > Commons.MAX_VIDEO_SIZE) {
-                            String readableFileSize = Utils.formatBytes(fileSize);
-                            String readableMaxSize = Utils.formatBytes(Commons.MAX_VIDEO_SIZE);
+                            String readableFileSize = CommonUtils.formatBytes(fileSize);
+                            String readableMaxSize = CommonUtils.formatBytes(Commons.MAX_VIDEO_SIZE);
                             XposedUtils.log("Video too big (" + readableFileSize + ")");
                             // Inform the user with a dialog
                             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity);

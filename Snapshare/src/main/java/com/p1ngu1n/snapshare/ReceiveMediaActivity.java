@@ -31,6 +31,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
 
+import com.p1ngu1n.snapshare.Util.CommonUtils;
+
 /**
  * This Activity has an intent-filter to receive images and videos.
  *
@@ -56,7 +58,7 @@ public class ReceiveMediaActivity extends Activity implements DialogInterface.On
 
             if (mediaUri != null) {
                 Log.d(Commons.LOG_TAG, "Received Media share of type " + type + "\nand URI " + mediaUri.toString() + "\nCalling hooked Snapchat with same Intent.");
-                if (Utils.isModuleEnabled()) {
+                if (CommonUtils.isModuleEnabled()) {
                     intent.setComponent(ComponentName.unflattenFromString("com.snapchat.android/.LandingPageActivity"));
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
@@ -88,7 +90,7 @@ public class ReceiveMediaActivity extends Activity implements DialogInterface.On
     @Override
     public void onClick(DialogInterface dialog, int which) {
         if (which == AlertDialog.BUTTON_POSITIVE) {
-            Utils.openXposedInstaller(ReceiveMediaActivity.this);
+            CommonUtils.openXposedInstaller(ReceiveMediaActivity.this);
         }
         finish();
     }

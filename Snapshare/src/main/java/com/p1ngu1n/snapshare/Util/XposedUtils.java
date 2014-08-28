@@ -1,4 +1,4 @@
-package com.p1ngu1n.snapshare;
+package com.p1ngu1n.snapshare.Util;
 /**
  Commons.java created on 8/1/14.
 
@@ -19,6 +19,8 @@ package com.p1ngu1n.snapshare;
  You should have received a copy of the GNU General Public License
  a gazillion times. If not, see <http://www.gnu.org/licenses/>.
  */
+
+import com.p1ngu1n.snapshare.Commons;
 
 import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;

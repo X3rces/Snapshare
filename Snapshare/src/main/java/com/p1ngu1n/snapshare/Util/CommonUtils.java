@@ -1,4 +1,4 @@
-package com.p1ngu1n.snapshare;
+package com.p1ngu1n.snapshare.Util;
 /**
  Commons.java created on 7/11/14.
 
@@ -28,6 +28,8 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.widget.Toast;
 
+import com.p1ngu1n.snapshare.R;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -35,7 +37,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class Utils {
+public class CommonUtils {
     /**
      * Converts the content:// scheme to the file:// scheme
      * @param contentResolver

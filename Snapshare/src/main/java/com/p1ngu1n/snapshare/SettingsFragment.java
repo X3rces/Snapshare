@@ -33,6 +33,8 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 
+import com.p1ngu1n.snapshare.Util.CommonUtils;
+
 /**
  * Class to hold all the regular settings
  *
@@ -64,7 +66,7 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
         updateSummary("pref_adjustment");
         updateSummary("pref_rotation");
 
-        if (!Utils.isModuleEnabled()) {
+        if (!CommonUtils.isModuleEnabled()) {
             createXposedDialog().show();
         }
     }
@@ -147,7 +149,7 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
     @Override
     public void onClick(DialogInterface dialog, int which) {
         if (which == AlertDialog.BUTTON_POSITIVE) {
-            Utils.openXposedInstaller(getActivity());
+            CommonUtils.openXposedInstaller(getActivity());
         }
     }
 }
