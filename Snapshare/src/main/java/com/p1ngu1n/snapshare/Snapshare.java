@@ -410,15 +410,14 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
         // Enable Snapchat's internal debugging class
         if (Commons.TIMBER) {
             XposedUtils.log("Timber enabled");
-            String timberClass = "com.snapchat.android.Timber";
+            Class<?> timberClass = findClass("com.snapchat.android.Timber", lpparam.classLoader);
             // Return true when checking whether it should debug
-            findAndHookMethod(timberClass, lpparam.classLoader, "a", XC_MethodReplacement.returnConstant(true));
-            findAndHookMethod(timberClass, lpparam.classLoader, "b", XC_MethodReplacement.returnConstant(true));
-            findAndHookMethod(timberClass, lpparam.classLoader, "c", XC_MethodReplacement.returnConstant(true));
+            findAndHookMethod(timberClass, "a", XC_MethodReplacement.returnConstant(true));
+            findAndHookMethod(timberClass, "b", XC_MethodReplacement.returnConstant(true));
+            findAndHookMethod(timberClass, "c", XC_MethodReplacement.returnConstant(true));
             // Usually returns the class name to use as the Log Tag, however we want a custom one
-            findAndHookMethod(timberClass, lpparam.classLoader, "d", XC_MethodReplacement.returnConstant("SnapchatTimber"));
+            findAndHookMethod(timberClass, "d", XC_MethodReplacement.returnConstant("SnapchatTimber"));
         }
-
     }
 
     private static String matrixToString(Matrix matrix) {
