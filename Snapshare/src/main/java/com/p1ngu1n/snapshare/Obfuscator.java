@@ -26,17 +26,15 @@ package com.p1ngu1n.snapshare;
  *
  */
 public enum Obfuscator {
-    // com.snapchat.android.camera.Camera(Preview)Fragment  (void)
+    // com.snapchat.android.camera.Camera(Preview)Fragment
     CAMERA_LOAD (new String[] {"refreshFlashButton", "k", "l", "e", "e", "p", "q", "q", "r"}),
-    // com.snapchat.android.util.eventbus.BusProvider       (Bus)
+    // com.snapchat.android.util.eventbus.BusProvider
     GET_BUS (new String[] {"getInstance", "a", "a", "a", "a", "a", "a", "a", "a"}),
     // com.squareup.otto.Bus
     BUS_POST (new String[] {"post", "c", "c", "c", "c", "a", "a", "a", "a"}),
     // com.snapchat.android.SnapPreviewFragment
     M_SNAP_C_EVENT (new String[] {"mSnapCapturedEvent", "w", "w", "v", "v", "u", "u", "u", "z"}),
-    // com.snapchat.android.SnapPreviewFragment
-    ON_BACK_PRESS (new String[] {"onDelegatedBackPress", "m", "m", "c", "o" ,"l", "l", "q", "q"}),
-    // com.snapchat.android.model.Snapbryo.Builder
+    // com.snapchat.android.model.Snapbryo.Builder // Parameters depend on media type (Uri or Bitmap)
     BUILDER_CONSTRUCTOR (new String[] {null, null, null, "a", "a", "a", "a", "a", "a"}),
     // com.snapchat.android.model.Snapbryo.Builder
     CREATE_SNAPBRYO (new String[] {null, null, null, "a", "a", "a", "a", "a", "a"});
