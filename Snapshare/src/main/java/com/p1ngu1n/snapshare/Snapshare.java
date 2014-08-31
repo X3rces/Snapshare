@@ -1,24 +1,24 @@
 package com.p1ngu1n.snapshare;
 
 /**
- Snapshare.java created on 6/26/13.
-
- Copyright (C) 2013 Sebastian Stammler <stammler@cantab.net>
-
- This file is part of Snapshare.
-
- Snapshare is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- Snapshare is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- a gazillion times. If not, see <http://www.gnu.org/licenses/>.
+ * Snapshare.java created on 2014-06-26.
+ *
+ * Copyright (C) 2013 Sebastian Stammler <stammler@cantab.net>
+ *
+ * This file is part of Snapshare.
+ *
+ * Snapshare is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Snapshare is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * a gazillion times. If not, see <http://www.gnu.org/licenses/>.
  */
 
 import android.app.Activity;
@@ -46,9 +46,7 @@ import com.p1ngu1n.snapshare.Util.ImageUtils;
 import com.p1ngu1n.snapshare.Util.XposedUtils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
@@ -94,7 +92,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
 
         XposedUtils.refreshPreferences();
 
-        /** thanks to KeepChat for the following snippet: **/
+        // Thanks to KeepChat for the following snippet
         try {
             XposedUtils.log("----------------- SNAPSHARE HOOKED -----------------", false);
             Object activityThread = callStaticMethod(findClass("android.app.ActivityThread", null), "currentActivityThread");
@@ -107,8 +105,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
             XposedUtils.log("Snapshare Version: " + piSnapshare.versionName + " (" + piSnapshare.versionCode + ")\n", false);
 
             SNAPCHAT_VERSION = Obfuscator.getVersion(piSnapChat.versionCode);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             XposedBridge.log("Snapshare: exception while trying to get version info. (" + e.getMessage() + ")");
             return;
         }
@@ -116,10 +113,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
         final Class SnapCapturedEventClass = findClass("com.snapchat.android.util.eventbus.SnapCapturedEvent", lpparam.classLoader);
         final Media media = new Media(); // a place to store the media
 
-        /**
-         * Here the main work happens. We hook after the onCreate() call of the main Activity
-         * to create a sensible media object.
-         */
+        // This is where the media is loaded and transformed. Hooks after the onCreate() call of the main Activity.
         findAndHookMethod("com.snapchat.android.LandingPageActivity", lpparam.classLoader, "onCreate", Bundle.class, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -182,10 +176,9 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
 
                             // Make Snapchat show the image
                             media.setContent(bitmap);
-                        } catch (FileNotFoundException e) {
-                            XposedUtils.log("File not found!\n" + e.getMessage());
-                        } catch (IOException e) {
-                            XposedUtils.log("IO Error!\n" + e.getMessage());
+                        } catch (Exception e) {
+                            XposedUtils.log(e);
+                            return;
                         }
                     }
                     else if (type.startsWith("video/")) {
@@ -271,20 +264,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                             String readableMaxSize = CommonUtils.formatBytes(Commons.MAX_VIDEO_SIZE);
                             XposedUtils.log("Video too big (" + readableFileSize + ")");
                             // Inform the user with a dialog
-                            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity);
-                            dialogBuilder.setTitle(mResources.getString(R.string.app_name));
-                            dialogBuilder.setMessage(mResources.getString(R.string.size_error, readableFileSize, readableMaxSize));
-                            dialogBuilder.setPositiveButton(mResources.getString(R.string.continue_anyway), new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    dialog.cancel();
-                                }
-                            });
-                            dialogBuilder.setNegativeButton(mResources.getString(R.string.go_back), new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    activity.finish();
-                                }
-                            });
-                            dialogBuilder.show();
+                            createSizeDialog(activity, readableFileSize, readableMaxSize).show();
                         }
                         media.setContent(videoUri);
                     }
@@ -296,20 +276,19 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                      * while in the SnapPreviewFragment, would draw the shared image or video instead of showing
                      * what has just been recorded by the camera. */
                     initializedUri = mediaUri;
-                }
-                else {
+                } else {
                     XposedUtils.log("Regular call of Snapchat.");
                     initializedUri = null;
                 }
             }
 
         });
-        /** 
+        /**
          * We needed to find a method that got called after the camera was ready. 
          * refreshFlashButton is the only method that falls under this category.
          * As a result, we need to be very careful to clean up after ourselves, to prevent
          * crashes and not being able to quit etc...
-         * 
+         *
          * after the method is called, we call the eventbus to send a snapcapture event 
          * with our own media.
          */
@@ -320,27 +299,27 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
 
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                if(initializedUri == null) return; // We don't have an image to send, so don't try to send one
+                if (initializedUri == null)
+                    return; // We don't have an image to send, so don't try to send one
+
                 XposedUtils.log("Doing it's magic!");
                 Object snapCaptureEvent;
 
-                // new stuff for 4.1.10: Class called Snapbryo (gross)
-                // this class now stores all the data for snaps. What's good for us is that we can continue using either a bitmap or a videouri in a method.
+                // Since 4.1.10 a new Class called Snapbryo stores all the data for snaps
                 // SnapCapturedEvent(Snapbryo(Builder(Media)))
-                if(SNAPCHAT_VERSION >= Obfuscator.FOUR_ONE_TEN) {
+                if (SNAPCHAT_VERSION >= Obfuscator.FOUR_ONE_TEN) {
                     Object builder = newInstance(findClass("com.snapchat.android.model.Snapbryo.Builder", lpparam.classLoader));
                     builder = callMethod(builder, Obfuscator.BUILDER_CONSTRUCTOR.getValue(SNAPCHAT_VERSION), media.getContent());
                     Object snapbryo = callMethod(builder, Obfuscator.CREATE_SNAPBRYO.getValue(SNAPCHAT_VERSION));
                     snapCaptureEvent = newInstance(SnapCapturedEventClass, snapbryo);
-                }
-                else {
+                } else {
                     snapCaptureEvent = newInstance(SnapCapturedEventClass, media.getContent());
                 }
 
                 Object busProvider = callStaticMethod(findClass("com.snapchat.android.util.eventbus.BusProvider", lpparam.classLoader), Obfuscator.GET_BUS.getValue(SNAPCHAT_VERSION));
                 callMethod(busProvider, Obfuscator.BUS_POST.getValue(SNAPCHAT_VERSION), snapCaptureEvent);
-
-                initializedUri = null; // clean up after ourselves. If we don't do this snapchat will crash.
+                // Clean up after ourselves, if we don't do this snapchat will crash
+                initializedUri = null;
             }
         });
 
@@ -369,6 +348,30 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
         } else {
             return "(unknown)°";
         }
+    }
+
+    /**
+     * Creates a dialog saying the image is too large. Two options are given: continue or quit.
+     * @param activity
+     * @param readableFileSize The human-readable current file size
+     * @param readableMaxSize The human-readable maximum file size
+     * @return The dialog to show
+     */
+    private static AlertDialog createSizeDialog(final Activity activity, String readableFileSize, String readableMaxSize) {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity);
+        dialogBuilder.setTitle(mResources.getString(R.string.app_name));
+        dialogBuilder.setMessage(mResources.getString(R.string.size_error, readableFileSize, readableMaxSize));
+        dialogBuilder.setPositiveButton(mResources.getString(R.string.continue_anyway), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
+            }
+        });
+        dialogBuilder.setNegativeButton(mResources.getString(R.string.go_back), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                activity.finish();
+            }
+        });
+        return dialogBuilder.create();
     }
 
     /** {@code XposedHelpers.callMethod()} cannot call methods of the super class of an object, because it
