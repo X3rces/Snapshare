@@ -30,13 +30,9 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.res.XModuleResources;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.DisplayMetrics;
 import android.webkit.URLUtil;
 
 import com.coremedia.iso.IsoFile;
@@ -46,6 +42,7 @@ import com.googlecode.mp4parser.DataSource;
 import com.googlecode.mp4parser.FileDataSourceImpl;
 import com.googlecode.mp4parser.util.Matrix;
 import com.p1ngu1n.snapshare.Util.CommonUtils;
+import com.p1ngu1n.snapshare.Util.ImageUtils;
 import com.p1ngu1n.snapshare.Util.XposedUtils;
 
 import java.io.File;
@@ -155,94 +152,30 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                     if (type.startsWith("image/")) {
                         XposedUtils.log("Image URI: " + mediaUri.toString());
                         try {
-                            /* TODO: use BitmapFactory with inSampleSize magic to avoid using too much memory,
-                             * see http://developer.android.com/training/displaying-bitmaps/load-bitmap.html#load-bitmap */
                             Bitmap bitmap = MediaStore.Images.Media.getBitmap(contentResolver, mediaUri);
-                            int width = bitmap.getWidth();
-                            int height = bitmap.getHeight();
-                            XposedUtils.log("Image shared, size: " + width + " x " + height + " (w x h)");
+                            XposedUtils.log("Image shared, size: " + bitmap.getWidth() + " x " + bitmap.getHeight() + " (w x h)");
 
                             // Landscape images have to be rotated 90 degrees clockwise for Snapchat to be displayed correctly
-                            if (width > height && Commons.ROTATION_MODE != Commons.ROTATION_NONE) {
+                            if (bitmap.getWidth() > bitmap.getHeight() && Commons.ROTATION_MODE != Commons.ROTATION_NONE) {
                                 XposedUtils.log("Landscape image detected, rotating image " + Commons.ROTATION_MODE + " degrees");
-                                android.graphics.Matrix matrix = new android.graphics.Matrix();
-                                matrix.setRotate(Commons.ROTATION_MODE);
-                                bitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
-                                // resetting width and height
-                                width = bitmap.getWidth();
-                                height = bitmap.getHeight();
+                                bitmap = ImageUtils.rotateBitmap(bitmap, Commons.ROTATION_MODE);
                             }
 
-                            /**
-                             * Scaling and cropping mayhem
-                             *
-                             * Snapchat will break if the image is too large and it will scale the image up if the
-                             * Display rectangle (DisplayMetrics.widthPixels x DisplayMetrics.heightPixels rectangle)
-                             * is larger than the image.
-                             *
-                             * So, we sample the image down such that the Display rectangle fits into it and touches one side.
-                             * Then we crop the picture to that rectangle
-                             */
-                            DisplayMetrics dm = new DisplayMetrics();
-                            activity.getWindowManager().getDefaultDisplay().getMetrics(dm);
-                            int dWidth = dm.widthPixels;
-                            int dHeight = dm.heightPixels;
-
-                            XposedUtils.log("Display metrics: " + dWidth + " x " + dHeight + " (w x h)");
-                            // DisplayMetrics' values depend on the phone's tilt, so we normalize them to Portrait mode
-                            if (dWidth > dHeight) {
-                                XposedUtils.log("Normalizing display metrics to Portrait mode.");
-                                int temp = dWidth;
-                                //noinspection SuspiciousNameCombination
-                                dWidth = dHeight;
-                                dHeight = temp;
-                            }
-
-                            if(Commons.ADJUST_METHOD == Commons.ADJUST_CROP) {
-                                int imageToDisplayRatio = width * dHeight - height * dWidth;
-                                if (imageToDisplayRatio > 0) {
-                                    // i.e., width/height > dWidth/dHeight, so have to crop from left and right:
-                                    int newWidth = (dWidth * height / dHeight);
-                                    XposedUtils.log("New width after cropping left and right: " + newWidth);
-                                    bitmap = Bitmap.createBitmap(bitmap, (width - newWidth) / 2, 0, newWidth, height);
-                                } else if (imageToDisplayRatio < 0) {
-                                    // i.e., width/height < dWidth/dHeight, so have to crop from top and bottom:
-                                    int newHeight = (dHeight * width / dWidth);
-                                    XposedUtils.log("New height after cropping top and bottom: " + newHeight);
-                                    bitmap = Bitmap.createBitmap(bitmap, 0, (height - newHeight) / 2, width, newHeight);
-                                }
-
-                                /* If the image properly covers the Display rectangle, we mark it as a "large" image
-                                 * and are going to scale it down. We make this distinction because we don't wanna
-                                 * scale the image up if it is smaller than the Display rectangle. */
-                                boolean largeImage = ((width > dWidth) & (height > dHeight));
-                                XposedUtils.log(largeImage ? "Large image, scaling down" : "Small image");
-                                if (largeImage) {
-                                    bitmap = Bitmap.createScaledBitmap(bitmap, dWidth, dHeight, true);
-                                }
-                                // Scaling and cropping finished, ready to let Snapchat display our result
-                            }
-                            else {
-                                // we are going to scale the image down and place a black background behind it
-                                Bitmap background = Bitmap.createBitmap(dWidth, dHeight, Bitmap.Config.ARGB_8888);
-                                background.eraseColor(Color.BLACK);
-                                Canvas canvas = new Canvas(background);
-                                android.graphics.Matrix transform = new android.graphics.Matrix();
-                                float scale = dWidth / (float)width;
-                                float xTrans = 0;
-                                if(Commons.ADJUST_METHOD == Commons.ADJUST_NONE) {
-                                    // Remove scaling and add some translation
-                                    scale = 1;
-                                    xTrans = dWidth/2 - width/2;
-                                }
-                                float yTrans = dHeight/2 - scale*height/2;
-
-                                transform.preScale(scale, scale);
-                                transform.postTranslate(xTrans, yTrans);
-                                Paint paint = new Paint();
-                                paint.setFilterBitmap(true);
-                                canvas.drawBitmap(bitmap, transform, paint);
-                                bitmap = background;
+                            // Snapchat will break if the image is too large and it will scale the image up if the Display rectangle is larger than the image.
+                            ImageUtils imageUtils = new ImageUtils(activity);
+                            switch (Commons.ADJUST_METHOD) {
+                                case Commons.ADJUST_CROP:
+                                    XposedUtils.log("Adjustment Method: Crop");
+                                    bitmap = imageUtils.adjustmentMethodCrop(bitmap);
+                                    break;
+                                case Commons.ADJUST_SCALE:
+                                    XposedUtils.log("Adjustment Method: Scale");
+                                    bitmap = imageUtils.adjustmentMethodScale(bitmap);
+                                    break;
+                                case Commons.ADJUST_NONE:
+                                    XposedUtils.log("Adjustment Method: None");
+                                    bitmap = imageUtils.adjustmentMethodNone(bitmap);
+                                    break;
                             }
 
                             // Make Snapchat show the image
