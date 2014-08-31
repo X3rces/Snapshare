@@ -26,7 +26,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.media.ExifInterface;
 import android.util.DisplayMetrics;
+
+import java.io.IOException;
 
 public class ImageUtils {
     private int targetWidth;
@@ -49,6 +52,52 @@ public class ImageUtils {
             targetWidth = dm.heightPixels;
             targetHeight = dm.widthPixels;
         }
+    }
+
+    /**
+     * Reads the orientation flag from the Exif-data and rotates and translates the bitmap according to this.
+     * @param bitmap The bitmap to be rotated
+     * @param path The path to the image
+     * @return The transformed bitmap
+     * @throws IOException File not found
+     */
+    public static Bitmap rotateUsingExif(Bitmap bitmap, String path) throws IOException {
+        Matrix matrix = new Matrix();
+        ExifInterface exifInterface = new ExifInterface(path);
+        int orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+        XposedUtils.log("Exif rotation tag: " + orientation);
+
+        // See http://sylvana.net/jpegcrop/exif_orientation.html for more information about the values of the Exif Orientation Tag
+        switch (orientation) {
+            case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
+                matrix.setScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                matrix.setRotate(180);
+                break;
+            case ExifInterface.ORIENTATION_FLIP_VERTICAL:
+                matrix.setRotate(180);
+                matrix.postScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_TRANSPOSE:
+                matrix.setRotate(90);
+                matrix.postScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                matrix.setRotate(90);
+                break;
+            case ExifInterface.ORIENTATION_TRANSVERSE:
+                matrix.setRotate(-90);
+                matrix.postScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                matrix.setRotate(-90);
+                break;
+            default:
+                return bitmap;
+        }
+
+        return transformBitmap(bitmap, matrix);
     }
 
     /**

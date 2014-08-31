@@ -155,6 +155,8 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                             Bitmap bitmap = MediaStore.Images.Media.getBitmap(contentResolver, mediaUri);
                             XposedUtils.log("Image shared, size: " + bitmap.getWidth() + " x " + bitmap.getHeight() + " (w x h)");
 
+                            // Rotate image using EXIF-data
+                            bitmap = ImageUtils.rotateUsingExif(bitmap, mediaUri.getPath());
                             // Landscape images have to be rotated 90 degrees clockwise for Snapchat to be displayed correctly
                             if (bitmap.getWidth() > bitmap.getHeight() && Commons.ROTATION_MODE != Commons.ROTATION_NONE) {
                                 XposedUtils.log("Landscape image detected, rotating image " + Commons.ROTATION_MODE + " degrees");
