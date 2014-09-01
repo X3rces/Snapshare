@@ -143,9 +143,13 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                             // Rotate image using EXIF-data
                             bitmap = ImageUtils.rotateUsingExif(bitmap, mediaUri.getPath());
                             // Landscape images have to be rotated 90 degrees clockwise for Snapchat to be displayed correctly
-                            if (bitmap.getWidth() > bitmap.getHeight() && Commons.ROTATION_MODE != Commons.ROTATION_NONE) {
-                                XposedUtils.log("Landscape image detected, rotating image " + Commons.ROTATION_MODE + " degrees");
-                                bitmap = ImageUtils.rotateBitmap(bitmap, Commons.ROTATION_MODE);
+                            if (Commons.ROTATION_MODE != Commons.ROTATION_NONE) {
+                                if (bitmap.getWidth() > bitmap.getHeight()) {
+                                    XposedUtils.log("Landscape image detected, rotating image " + Commons.ROTATION_MODE + " degrees");
+                                    bitmap = ImageUtils.rotateBitmap(bitmap, Commons.ROTATION_MODE);
+                                } else {
+                                    XposedUtils.log("Image is in portrait, rotation not needed");
+                                }
                             }
 
                             // Snapchat will break if the image is too large and it will scale the image up if the Display rectangle is larger than the image.
@@ -271,12 +275,13 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
         if (Commons.TIMBER) {
             XposedUtils.log("Timber enabled");
             Class<?> timberClass = findClass("com.snapchat.android.Timber", lpparam.classLoader);
+            Class<?> releaseManagerClass = findClass("com.snapchat.android.util.debug.ReleaseManager", lpparam.classLoader);
             // Return true when checking whether it should debug
-            findAndHookMethod(timberClass, "a", XC_MethodReplacement.returnConstant(true));
-            findAndHookMethod(timberClass, "b", XC_MethodReplacement.returnConstant(true));
-            findAndHookMethod(timberClass, "c", XC_MethodReplacement.returnConstant(true));
+            findAndHookMethod(releaseManagerClass, "d", XC_MethodReplacement.returnConstant(true));
+            findAndHookMethod(releaseManagerClass, "e", XC_MethodReplacement.returnConstant(true));
+            findAndHookMethod(releaseManagerClass, "f", XC_MethodReplacement.returnConstant(true));
             // Usually returns the class name to use as the Log Tag, however we want a custom one
-            findAndHookMethod(timberClass, "d", XC_MethodReplacement.returnConstant("SnapchatTimber"));
+            findAndHookMethod(timberClass, "a", XC_MethodReplacement.returnConstant("SnapchatTimber"));
         }
     }
 
