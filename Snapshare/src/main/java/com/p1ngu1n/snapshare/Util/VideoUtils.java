@@ -56,10 +56,12 @@ public class VideoUtils {
         DataSource dataSource = new FileDataSourceImpl(videoFile);
         IsoFile isoFile = new IsoFile(dataSource);
 
+        boolean videoTrackFound = false;
         List<TrackBox> trackBoxes = isoFile.getMovieBox().getBoxes(TrackBox.class);
         // Iterate through all tracks until the track is a video track (type equals 'vide')
         for (TrackBox trackBox : trackBoxes) {
             if (trackBox.getMediaBox().getHandlerBox().getHandlerType().equals("vide")) {
+                videoTrackFound = true;
                 TrackHeaderBox trackHeaderBox = trackBox.getTrackHeaderBox();
                 // Get the dimensions of the video
                 double width = trackHeaderBox.getWidth();
@@ -96,6 +98,12 @@ public class VideoUtils {
                 }
                 break;
             }
+        }
+
+        // No video track with the type 'vide' found
+        if (!videoTrackFound) {
+            XposedUtils.log("No video track found, just creating a copy");
+            CommonUtils.copyFile(videoFile, tempFile);
         }
     }
 
