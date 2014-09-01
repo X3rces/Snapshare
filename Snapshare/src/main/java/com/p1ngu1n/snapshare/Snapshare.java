@@ -35,21 +35,12 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.webkit.URLUtil;
 
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.TrackBox;
-import com.coremedia.iso.boxes.TrackHeaderBox;
-import com.googlecode.mp4parser.DataSource;
-import com.googlecode.mp4parser.FileDataSourceImpl;
-import com.googlecode.mp4parser.util.Matrix;
 import com.p1ngu1n.snapshare.Util.CommonUtils;
 import com.p1ngu1n.snapshare.Util.ImageUtils;
+import com.p1ngu1n.snapshare.Util.VideoUtils;
 import com.p1ngu1n.snapshare.Util.XposedUtils;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.nio.channels.FileChannel;
-import java.text.DecimalFormat;
-import java.util.List;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
@@ -205,50 +196,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                                 XposedUtils.log("Rotation disabled, creating a temporary copy");
                                 CommonUtils.copyFile(videoFile, tempFile);
                             } else {
-                                DataSource dataSource = new FileDataSourceImpl(videoFile);
-                                IsoFile isoFile = new IsoFile(dataSource);
-
-                                List<TrackBox> trackBoxes = isoFile.getMovieBox().getBoxes(TrackBox.class);
-                                // Iterate through all tracks until the track is a video track (type equals 'vide')
-                                for (TrackBox trackBox : trackBoxes) {
-                                    if (trackBox.getMediaBox().getHandlerBox().getHandlerType().equals("vide")) {
-                                        TrackHeaderBox trackHeaderBox = trackBox.getTrackHeaderBox();
-                                        // Get the dimensions of the video
-                                        double width = trackHeaderBox.getWidth();
-                                        double height = trackHeaderBox.getHeight();
-                                        DecimalFormat format = new DecimalFormat("#");
-                                        XposedUtils.log("Video resolution: " + format.format(width) + " x " + format.format(height) + " (w x h)");
-
-                                        // Determine the way to rotate
-                                        Matrix matrix;
-                                        if (width > height) {
-                                            if (Commons.ROTATION_MODE == Commons.ROTATION_CW) {
-                                                matrix = Matrix.ROTATE_90;
-                                            } else {
-                                                matrix = Matrix.ROTATE_270;
-                                            }
-                                        } else {
-                                            matrix = Matrix.ROTATE_0;
-                                        }
-
-                                        // No need to rotate if the rotation hasn't changed
-                                        if (matrix.equals(trackHeaderBox.getMatrix())) {
-                                            XposedUtils.log("Keeping rotation at " + matrixToString(matrix) + ", just creating a copy");
-                                            CommonUtils.copyFile(videoFile, tempFile);
-                                        } else {
-                                            XposedUtils.log("Rotation changed from " + matrixToString(trackHeaderBox.getMatrix()) + " to " + matrixToString(matrix));
-                                            // Set the rotation matrix
-                                            trackHeaderBox.setMatrix(matrix);
-                                            // Write the video to the temp file
-                                            FileOutputStream fos = new FileOutputStream(tempFile);
-                                            FileChannel fc = fos.getChannel();
-                                            isoFile.writeContainer(fc);
-                                            fc.close();
-                                            fos.close();
-                                        }
-                                        break;
-                                    }
-                                }
+                                VideoUtils.rotateVideo(videoFile, tempFile);
                             }
 
                             videoUri = Uri.fromFile(tempFile);
@@ -329,25 +277,6 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
             findAndHookMethod(timberClass, "c", XC_MethodReplacement.returnConstant(true));
             // Usually returns the class name to use as the Log Tag, however we want a custom one
             findAndHookMethod(timberClass, "d", XC_MethodReplacement.returnConstant("SnapchatTimber"));
-        }
-    }
-
-    /**
-     * Get the string representation of a matrix
-     * @param matrix The matrix used as source
-     * @return The string formatted as [degrees]°
-     */
-    private static String matrixToString(Matrix matrix) {
-        if (matrix.equals(Matrix.ROTATE_0)) {
-            return "0°";
-        } else if (matrix.equals(Matrix.ROTATE_90)) {
-            return "90°";
-        } else if (matrix.equals(Matrix.ROTATE_180)) {
-            return "180°";
-        } else if (matrix.equals(Matrix.ROTATE_270)) {
-            return "270°";
-        } else {
-            return "(unknown)°";
         }
     }
 
