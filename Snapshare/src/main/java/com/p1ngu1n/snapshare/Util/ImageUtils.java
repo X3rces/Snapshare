@@ -41,7 +41,7 @@ public class ImageUtils {
 
     /**
      * Initializes the ImageUtils class, sets the device resolution in specific.
-     * @param context
+     * @param context The context used to access resources
      */
     @SuppressWarnings("SuspiciousNameCombination")
     public ImageUtils(Context context) {
@@ -108,7 +108,7 @@ public class ImageUtils {
      * Rotate a bitmap
      * @param bitmap The bitmap to be rotated
      * @param degrees The number of the degrees the bitmap should be rotated
-     * @return
+     * @return The rotated bitmap
      */
     public static Bitmap rotateBitmap(Bitmap bitmap, int degrees) {
         Matrix matrix = new Matrix();
@@ -120,7 +120,7 @@ public class ImageUtils {
      * Transform a bitmap.
      * @param bitmap The bitmap to be transformed
      * @param matrix The matrix containing the transformation to be applied
-     * @return
+     * @return The transformed bitmap
      */
     public static Bitmap transformBitmap(Bitmap bitmap, Matrix matrix) {
         try {
@@ -128,7 +128,7 @@ public class ImageUtils {
             bitmap.recycle();
             return transformed;
         } catch (OutOfMemoryError e) {
-            XposedUtils.log(new Exception("OutOfMemoryError, original bitmap returned", e));
+            XposedUtils.log("Out of memory, original bitmap returned", e);
             return bitmap;
         }
     }
@@ -167,8 +167,8 @@ public class ImageUtils {
 
     /**
      * Creates a bitmap with the resolution of the device and the given bitmap centered. The bitmap is not resized.
-     * @param bitmap
-     * @return
+     * @param bitmap The bitmap to be used as source
+     * @return The adjusted bitmap
      */
     public Bitmap adjustmentMethodNone(Bitmap bitmap) {
         float scale = 1;
@@ -179,8 +179,8 @@ public class ImageUtils {
 
     /**
      * Creates a bitmap with the resolution of the device and the given bitmap scaled. The bitmap is not cropped.
-     * @param bitmap
-     * @return
+     * @param bitmap The bitmap to be used as source
+     * @return The adjusted bitmap
      */
     public Bitmap adjustmentMethodScale(Bitmap bitmap) {
         float scale = targetWidth / (float) bitmap.getWidth();
@@ -191,11 +191,11 @@ public class ImageUtils {
 
     /**
      * Creates a bitmap with the resolution of the device and puts the given bitmap using the scale, x- and y-transitions.
-     * @param bitmap
-     * @param scale
+     * @param bitmap The bitmap to be used as source
+     * @param scale The scale the image has to be enlarged or reduced
      * @param xTrans The x-transition
      * @param yTrans The y-transition
-     * @return
+     * @return The adjusted bitmap
      */
     public Bitmap adjustmentMethodScale(Bitmap bitmap, float scale, float xTrans, float yTrans) {
         // we are going to scale the image down and place a black background behind it

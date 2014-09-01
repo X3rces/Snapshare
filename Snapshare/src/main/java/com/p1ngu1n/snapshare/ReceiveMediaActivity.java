@@ -68,7 +68,7 @@ public class ReceiveMediaActivity extends Activity implements DialogInterface.On
                 }
             }
         }
-        //call finish at the end to close the wrapper
+        // Finish this activity
         if (finish) {
             finish();
         }

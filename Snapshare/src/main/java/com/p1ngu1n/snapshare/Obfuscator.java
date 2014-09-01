@@ -50,7 +50,7 @@ public enum Obfuscator {
 
     private String[] v;
 
-    Obfuscator(String[] v) {
+    private Obfuscator(String[] v) {
         this.v = v;
     }
 

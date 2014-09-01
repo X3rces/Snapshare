@@ -47,7 +47,6 @@ import com.p1ngu1n.snapshare.Util.XposedUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
 import java.util.List;
@@ -56,7 +55,6 @@ import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XC_MethodReplacement;
-import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 import static de.robv.android.xposed.XposedHelpers.callMethod;
@@ -66,21 +64,23 @@ import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.newInstance;
 
 public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit {
-    /** Snapchat's version */
-    private static int SNAPCHAT_VERSION;
 
-    private static XModuleResources mResources;
-
-    /** After calling initSnapPreviewFragment() below, we set the
-     * initializedUri to the current media's Uri to prevent another call of onCreate() to initialize
-     * the media again. E.g. onCreate() is called again if the phone is rotated. */
+    /**
+     * The hook called after LandingPageActivity.onCreate() sets the initializedUri to the current media's Uri to prevent
+     * another call of onCreate() to initialize the media again, for example when the phone gets rotated. Also, if Snapchat
+     * is used normally after being launched by Snapshare, changing the screen rotation while in the SnapPreviewFragment,
+     * would draw the shared image or video instead of showing what has just been recorded by the camera.
+     */
     private Uri initializedUri;
+    private static int snapchatVersion;
+    private static XModuleResources mResources;
 
     @Override
     public void initZygote(StartupParam startupParam) throws Throwable {
         mResources = XModuleResources.createInstance(startupParam.modulePath, null);
     }
 
+    @Override
     public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
         // Set isModuleEnabled to true for detection whether Snapshare is enabled
         if (lpparam.packageName.equals(Commons.PACKAGE_NAME)) {
@@ -104,13 +104,13 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
             PackageInfo piSnapshare = context.getPackageManager().getPackageInfo(Commons.PACKAGE_NAME, 0);
             XposedUtils.log("Snapshare Version: " + piSnapshare.versionName + " (" + piSnapshare.versionCode + ")\n", false);
 
-            SNAPCHAT_VERSION = Obfuscator.getVersion(piSnapChat.versionCode);
+            snapchatVersion = Obfuscator.getVersion(piSnapChat.versionCode);
         } catch (Exception e) {
-            XposedBridge.log("Snapshare: exception while trying to get version info. (" + e.getMessage() + ")");
+            XposedUtils.log("Exception while trying to get version info", e);
             return;
         }
 
-        final Class SnapCapturedEventClass = findClass("com.snapchat.android.util.eventbus.SnapCapturedEvent", lpparam.classLoader);
+        final Class snapCapturedEventClass = findClass("com.snapchat.android.util.eventbus.SnapCapturedEvent", lpparam.classLoader);
         final Media media = new Media(); // a place to store the media
 
         // This is where the media is loaded and transformed. Hooks after the onCreate() call of the main Activity.
@@ -231,6 +231,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                                             matrix = Matrix.ROTATE_0;
                                         }
 
+                                        // No need to rotate if the rotation hasn't changed
                                         if (matrix.equals(trackHeaderBox.getMatrix())) {
                                             XposedUtils.log("Keeping rotation at " + matrixToString(matrix) + ", just creating a copy");
                                             CommonUtils.copyFile(videoFile, tempFile);
@@ -268,13 +269,11 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                         }
                         media.setContent(videoUri);
                     }
-                    /* Finally the image or video is marked as initialized to prevent reinitialisation of
-                     * the SnapCapturedEvent in case of a screen rotation (because onCreate() is then called).
-                     * This way, it is made sure that a shared image or media is only initialized and then
-                     * showed in a SnapPreviewFragment once.
-                     * Also, if Snapchat is used normally after being launched by Snapshare, a screen rotation
-                     * while in the SnapPreviewFragment, would draw the shared image or video instead of showing
-                     * what has just been recorded by the camera. */
+
+                    /**
+                     * Mark image as initialized
+                     * @see initializedUri
+                     */
                     initializedUri = mediaUri;
                 } else {
                     XposedUtils.log("Regular call of Snapchat.");
@@ -283,19 +282,15 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
             }
 
         });
-        /**
-         * We needed to find a method that got called after the camera was ready. 
-         * refreshFlashButton is the only method that falls under this category.
-         * As a result, we need to be very careful to clean up after ourselves, to prevent
-         * crashes and not being able to quit etc...
-         *
-         * after the method is called, we call the eventbus to send a snapcapture event 
-         * with our own media.
-         */
 
-        // new in 5.0.2: CameraFragment!
-        String cameraFragment = (SNAPCHAT_VERSION < Obfuscator.FIVE_ZERO_TWO ? "CameraPreviewFragment" : "CameraFragment");
-        findAndHookMethod("com.snapchat.android.camera." + cameraFragment, lpparam.classLoader, Obfuscator.CAMERA_LOAD.getValue(SNAPCHAT_VERSION), new XC_MethodHook() {
+        /**
+         * We want to send our media once the camera is ready, that's why we hook the refreshFlashButton method.
+         * The media is injected by calling the eventbus to send a snapcapture event with our own media.
+         *
+         * In 5.0.2 CameraPreviewFragment was renamed to CameraFragment.
+         */
+        String cameraFragment = "com.snapchat.android.camera." + (snapchatVersion < Obfuscator.FIVE_ZERO_TWO ? "CameraPreviewFragment" : "CameraFragment");
+        findAndHookMethod(cameraFragment, lpparam.classLoader, Obfuscator.CAMERA_LOAD.getValue(snapchatVersion), new XC_MethodHook() {
 
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -307,18 +302,19 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
 
                 // Since 4.1.10 a new Class called Snapbryo stores all the data for snaps
                 // SnapCapturedEvent(Snapbryo(Builder(Media)))
-                if (SNAPCHAT_VERSION >= Obfuscator.FOUR_ONE_TEN) {
+                if (snapchatVersion >= Obfuscator.FOUR_ONE_TEN) {
                     Object builder = newInstance(findClass("com.snapchat.android.model.Snapbryo.Builder", lpparam.classLoader));
-                    builder = callMethod(builder, Obfuscator.BUILDER_CONSTRUCTOR.getValue(SNAPCHAT_VERSION), media.getContent());
-                    Object snapbryo = callMethod(builder, Obfuscator.CREATE_SNAPBRYO.getValue(SNAPCHAT_VERSION));
-                    snapCaptureEvent = newInstance(SnapCapturedEventClass, snapbryo);
+                    builder = callMethod(builder, Obfuscator.BUILDER_CONSTRUCTOR.getValue(snapchatVersion), media.getContent());
+                    Object snapbryo = callMethod(builder, Obfuscator.CREATE_SNAPBRYO.getValue(snapchatVersion));
+                    snapCaptureEvent = newInstance(snapCapturedEventClass, snapbryo);
                 } else {
-                    snapCaptureEvent = newInstance(SnapCapturedEventClass, media.getContent());
+                    snapCaptureEvent = newInstance(snapCapturedEventClass, media.getContent());
                 }
 
-                Object busProvider = callStaticMethod(findClass("com.snapchat.android.util.eventbus.BusProvider", lpparam.classLoader), Obfuscator.GET_BUS.getValue(SNAPCHAT_VERSION));
-                callMethod(busProvider, Obfuscator.BUS_POST.getValue(SNAPCHAT_VERSION), snapCaptureEvent);
-                // Clean up after ourselves, if we don't do this snapchat will crash
+                // Call the eventbus to post our SnapCapturedEvent, this will take us to the SnapPreviewFragment
+                Object busProvider = callStaticMethod(findClass("com.snapchat.android.util.eventbus.BusProvider", lpparam.classLoader), Obfuscator.GET_BUS.getValue(snapchatVersion));
+                callMethod(busProvider, Obfuscator.BUS_POST.getValue(snapchatVersion), snapCaptureEvent);
+                // Clean up after ourselves, otherwise snapchat will crash
                 initializedUri = null;
             }
         });
@@ -336,6 +332,11 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
         }
     }
 
+    /**
+     * Get the string representation of a matrix
+     * @param matrix The matrix used as source
+     * @return The string formatted as [degrees]°
+     */
     private static String matrixToString(Matrix matrix) {
         if (matrix.equals(Matrix.ROTATE_0)) {
             return "0°";
@@ -352,7 +353,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
 
     /**
      * Creates a dialog saying the image is too large. Two options are given: continue or quit.
-     * @param activity
+     * @param activity The activity to be used to create the dialog
      * @param readableFileSize The human-readable current file size
      * @param readableMaxSize The human-readable maximum file size
      * @return The dialog to show
@@ -372,23 +373,5 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
             }
         });
         return dialogBuilder.create();
-    }
-
-    /** {@code XposedHelpers.callMethod()} cannot call methods of the super class of an object, because it
-     * uses {@code getDeclaredMethods()}. So we have to implement this little helper, which should work
-     * similar to {@code }callMethod()}. Furthermore, the exceptions from getMethod() are passed on.
-     * <p>
-     * At the moment, only argument-free methods supported (only case needed here). After a discussion
-     * with the Xposed author it looks as if the functionality to call super methods will be implemented
-     * in {@code XposedHelpers.callMethod()} in a future release.
-     *
-     * @param obj Object whose method should be called
-     * @param methodName String representing the name of the argument-free method to be called
-     * @return The object that the method call returns
-     * @see <a href="http://forum.xda-developers.com/showpost.php?p=42598280&postcount=1753">
-     *     Discussion about calls to super methods in Xposed's XDA thread</a>
-     */
-    private Object callSuperMethod(Object obj, String methodName) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        return obj.getClass().getMethod(methodName).invoke(obj);
     }
 }

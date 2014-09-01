@@ -73,7 +73,21 @@ public class XposedUtils {
         log(message, true);
     }
 
+    /**
+     * Write a throwable to the Xposed Log, even when debugging is disabled.
+     * @param throwable The throwable to log
+     */
     public static void log(Throwable throwable) {
         XposedBridge.log(throwable);
+    }
+
+    /**
+     * Write a throwable with a message to the Xposed Log, even when debugging is disabled.
+     * @param message The message to log
+     * @param throwable The throwable to log after the message
+     */
+    public static void log(String message, Throwable throwable) {
+        log(message);
+        log(throwable);
     }
 }
