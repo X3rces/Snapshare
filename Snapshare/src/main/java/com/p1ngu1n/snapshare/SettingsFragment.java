@@ -24,6 +24,7 @@ package com.p1ngu1n.snapshare;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -45,24 +46,19 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
     private int hitCounter;
     private long firstHitTimestamp;
 
+    @SuppressWarnings("deprecation")
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getPreferenceManager().setSharedPreferencesMode(1);
+        getPreferenceManager().setSharedPreferencesMode(Context.MODE_WORLD_READABLE);
         addPreferencesFromResource(R.xml.regular_settings);
 
         Preference launcherPref = findPreference("pref_launcher");
         launcherPref.setOnPreferenceChangeListener(launcherChangeListener);
 
         Preference aboutPreference = findPreference("pref_about");
+        aboutPreference.setTitle(getString(R.string.pref_about_title, BuildConfig.VERSION_NAME));
         aboutPreference.setOnPreferenceClickListener(this);
-
-        try {
-            String versionName = getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(), 0).versionName;
-            aboutPreference.setTitle(getString(R.string.pref_about_title, versionName));
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
 
         updateSummary("pref_adjustment");
         updateSummary("pref_rotation");
