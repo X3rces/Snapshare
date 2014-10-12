@@ -25,18 +25,22 @@ package com.p1ngu1n.snapshare;
  * This helps with the new obfuscation in snapchat version 4.0.21+
  */
 public enum Obfuscator {
-    // com.snapchat.android.camera.Camera(Preview)Fragment
-    CAMERA_LOAD (new String[] {"refreshFlashButton", "k", "l", "e", "e", "p", "q", "q", "r"}),
+    // com.snapchat.android.camera.Camera(Preview)Fragment // Deprecated since 5.0.36.0
+    CAMERA_LOAD (new String[] {"refreshFlashButton", "k", "l", "e", "e", "p", "q", "q", "r", null}),
     // com.snapchat.android.util.eventbus.BusProvider
-    GET_BUS (new String[] {"getInstance", "a", "a", "a", "a", "a", "a", "a", "a"}),
+    GET_BUS (new String[] {"getInstance", "a", "a", "a", "a", "a", "a", "a", "a", "a"}),
     // com.squareup.otto.Bus
-    BUS_POST (new String[] {"post", "c", "c", "c", "c", "a", "a", "a", "a"}),
+    BUS_POST (new String[] {"post", "c", "c", "c", "c", "a", "a", "a", "a", "a"}),
     // com.snapchat.android.SnapPreviewFragment
-    M_SNAP_C_EVENT (new String[] {"mSnapCapturedEvent", "w", "w", "v", "v", "u", "u", "u", "z"}),
+    M_SNAP_C_EVENT (new String[] {"mSnapCapturedEvent", "w", "w", "v", "v", "u", "u", "u", "z", "D"}),
     // com.snapchat.android.model.Snapbryo.Builder // Parameters depend on media type (Uri or Bitmap)
-    BUILDER_CONSTRUCTOR (new String[] {null, null, null, "a", "a", "a", "a", "a", "a"}),
+    BUILDER_CONSTRUCTOR (new String[] {null, null, null, "a", "a", "a", "a", "a", "a", "a"}),
     // com.snapchat.android.model.Snapbryo.Builder
-    CREATE_SNAPBRYO (new String[] {null, null, null, "a", "a", "a", "a", "a", "a"});
+    CREATE_SNAPBRYO (new String[] {null, null, null, "a", "a", "a", "a", "a", "a", "a"});
+
+    // com.snapchat.android.camera.Camera(Preview)Fragment
+    // Called from onReady event, which is called from
+    public static final String CAMERA_STATE_EVENT = "onCameraStateEvent";
 
     public static final int FOUR_20 = 0;
     public static final int FOUR_21 = 1;
@@ -47,6 +51,7 @@ public enum Obfuscator {
     public static final int FIVE_ZERO_NINE = 6;
     public static final int FIVE_ZERO_TWENTYTHREE = 7;
     public static final int FIVE_ZERO_THIRTYTWO = 8;
+    public static final int FIVE_ZERO_THIRTYSIX = 9;
 
     private String[] v;
 
@@ -64,7 +69,10 @@ public enum Obfuscator {
     }
 
     public static int getVersion(int version) {
-        if(version >= 352) {
+        if (version >= 420) {
+            return Obfuscator.FIVE_ZERO_THIRTYSIX;
+        }
+        else if (version >= 352) {
             return Obfuscator.FIVE_ZERO_THIRTYTWO;
         }
         else if (version >= 323) {

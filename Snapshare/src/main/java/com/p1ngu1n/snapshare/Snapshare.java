@@ -93,7 +93,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
             XposedUtils.log("SnapChat Version: " + piSnapChat.versionName + " (" + piSnapChat.versionCode + ")", false);
 
             PackageInfo piSnapshare = context.getPackageManager().getPackageInfo(Commons.PACKAGE_NAME, 0);
-            XposedUtils.log("Snapshare Version: " + piSnapshare.versionName + " (" + piSnapshare.versionCode + ")\n", false);
+            XposedUtils.log("Snapshare Version: " + piSnapshare.versionName + " (" + piSnapshare.versionCode + ")", false);
 
             snapchatVersion = Obfuscator.getVersion(piSnapChat.versionCode);
         } catch (Exception e) {
@@ -236,14 +236,10 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
         });
 
         /**
-         * We want to send our media once the camera is ready, that's why we hook the refreshFlashButton method.
+         * We want to send our media once the camera is ready, that's why we hook the refreshFlashButton/onCameraStateEvent method.
          * The media is injected by calling the eventbus to send a snapcapture event with our own media.
-         *
-         * In 5.0.2 CameraPreviewFragment was renamed to CameraFragment.
          */
-        String cameraFragment = "com.snapchat.android.camera." + (snapchatVersion < Obfuscator.FIVE_ZERO_TWO ? "CameraPreviewFragment" : "CameraFragment");
-        findAndHookMethod(cameraFragment, lpparam.classLoader, Obfuscator.CAMERA_LOAD.getValue(snapchatVersion), new XC_MethodHook() {
-
+        XC_MethodHook cameraLoadedHook = new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 if (initializedUri == null)
@@ -269,7 +265,20 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                 // Clean up after ourselves, otherwise snapchat will crash
                 initializedUri = null;
             }
-        });
+        };
+
+        // In 5.0.2 CameraPreviewFragment was renamed to CameraFragment
+        String cameraFragment = "com.snapchat.android.camera." + (snapchatVersion < Obfuscator.FIVE_ZERO_TWO ? "CameraPreviewFragment" : "CameraFragment");
+        // In 5.0.36.0 (beta) refreshFlashButton was removed, we use onCameraStateEvent instead
+        if (snapchatVersion >= Obfuscator.FIVE_ZERO_THIRTYSIX) {
+            Class<?> cameraStateEventClass = findClass("com.snapchat.android.util.eventbus.CameraStateEvent", lpparam.classLoader);
+            findAndHookMethod(cameraFragment, lpparam.classLoader, Obfuscator.CAMERA_STATE_EVENT, cameraStateEventClass, cameraLoadedHook);
+            XposedUtils.log("Hooked onCameraStateEvent");
+        } else {
+            findAndHookMethod(cameraFragment, lpparam.classLoader, Obfuscator.CAMERA_LOAD.getValue(snapchatVersion), cameraLoadedHook);
+            XposedUtils.log("Hooked refreshFlashButton");
+        }
+
 
         // Enable Snapchat's internal debugging class
         if (Commons.TIMBER) {
