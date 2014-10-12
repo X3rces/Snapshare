@@ -60,7 +60,7 @@ public class ReceiveMediaActivity extends Activity implements DialogInterface.On
                 Log.d(Commons.LOG_TAG, "Received Media share of type " + type + "\nand URI " + mediaUri.toString() + "\nCalling hooked Snapchat with same Intent.");
                 if (CommonUtils.isModuleEnabled()) {
                     intent.setComponent(ComponentName.unflattenFromString("com.snapchat.android/.LandingPageActivity"));
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                 } else {
                     createXposedDialog().show();
