@@ -50,7 +50,7 @@ public class CommonUtils {
 
     /**
      * Converts the content:// scheme to the file:// scheme
-     * @param contentResolver
+     * @param contentResolver Provides access to the content model
      * @param contentUri The URI to be converted using content:// scheme
      * @return The converted URI using file:// scheme
      */
@@ -101,8 +101,12 @@ public class CommonUtils {
                 out.write(buffer, 0, length);
             }
         } finally {
-            in.close();
-            out.close();
+            if (in != null) {
+                in.close();
+            }
+            if (out != null) {
+                out.close();
+            }
         }
     }
 

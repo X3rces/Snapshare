@@ -50,7 +50,7 @@ public class VideoUtils {
      * Reads the rotation flag from the video track, rotates it and writes it to a temporary file.
      * @param videoFile The video to be rotated
      * @param tempFile The file to be written to
-     * @throws Exception File could not be found or read
+     * @throws IOException File could not be found or read
      */
     public static void rotateVideo(File videoFile, File tempFile) throws IOException {
         DataSource dataSource = new FileDataSourceImpl(videoFile);

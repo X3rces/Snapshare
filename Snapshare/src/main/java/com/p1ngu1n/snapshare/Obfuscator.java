@@ -31,8 +31,6 @@ public enum Obfuscator {
     GET_BUS (new String[] {"getInstance", "a", "a", "a", "a", "a", "a", "a", "a", "a"}),
     // com.squareup.otto.Bus
     BUS_POST (new String[] {"post", "c", "c", "c", "c", "a", "a", "a", "a", "a"}),
-    // com.snapchat.android.SnapPreviewFragment
-    M_SNAP_C_EVENT (new String[] {"mSnapCapturedEvent", "w", "w", "v", "v", "u", "u", "u", "z", "D"}),
     // com.snapchat.android.model.Snapbryo.Builder // Parameters depend on media type (Uri or Bitmap)
     BUILDER_CONSTRUCTOR (new String[] {null, null, null, "a", "a", "a", "a", "a", "a", "a"}),
     // com.snapchat.android.model.Snapbryo.Builder
@@ -53,7 +51,7 @@ public enum Obfuscator {
     public static final int FIVE_ZERO_THIRTYTWO = 8;
     public static final int FIVE_ZERO_THIRTYSIX = 9;
 
-    private String[] v;
+    private final String[] v;
 
     private Obfuscator(String[] v) {
         this.v = v;

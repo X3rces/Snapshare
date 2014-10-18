@@ -74,7 +74,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
     @Override
     public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
         // Set isModuleEnabled to true for detection whether Snapshare is enabled
-        if (lpparam.packageName.equals(Commons.PACKAGE_NAME)) {
+        if (lpparam.packageName.equals(BuildConfig.PACKAGE_NAME)) {
             findAndHookMethod("com.p1ngu1n.snapshare.Util.CommonUtils", lpparam.classLoader, "isModuleEnabled", XC_MethodReplacement.returnConstant(true));
         }
 
@@ -91,9 +91,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
 
             PackageInfo piSnapChat = context.getPackageManager().getPackageInfo(lpparam.packageName, 0);
             XposedUtils.log("SnapChat Version: " + piSnapChat.versionName + " (" + piSnapChat.versionCode + ")", false);
-
-            PackageInfo piSnapshare = context.getPackageManager().getPackageInfo(Commons.PACKAGE_NAME, 0);
-            XposedUtils.log("Snapshare Version: " + piSnapshare.versionName + " (" + piSnapshare.versionCode + ")", false);
+            XposedUtils.log("Snapshare Version: " + BuildConfig.VERSION_NAME + " (" + BuildConfig.VERSION_CODE + ")", false);
 
             snapchatVersion = Obfuscator.getVersion(piSnapChat.versionCode);
         } catch (Exception e) {

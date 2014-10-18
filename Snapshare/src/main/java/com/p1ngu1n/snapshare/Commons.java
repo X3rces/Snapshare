@@ -28,7 +28,6 @@ package com.p1ngu1n.snapshare;
 public class Commons {
     // Debugging settings
     public static final String LOG_TAG = "Snapshare: ";
-    public static final String PACKAGE_NAME = "com.p1ngu1n.snapshare";
 
     // Adjustment methods
     public static final int ADJUST_CROP = 0;
@@ -48,5 +47,5 @@ public class Commons {
     public static boolean TIMBER = false;
 
     // Maximum video size setting (2.50 MB)
-    public static int MAX_VIDEO_SIZE = (int) (2.50 * 1024 * 1024);
+    public static final int MAX_VIDEO_SIZE = (int) (2.50 * 1024 * 1024);
 }
