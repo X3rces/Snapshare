@@ -68,7 +68,7 @@ public class ImageUtils {
     public static Bitmap rotateUsingExif(Bitmap bitmap, String path) throws IOException {
         Matrix matrix = new Matrix();
         ExifInterface exifInterface = new ExifInterface(path);
-        int orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+        int orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
         XposedUtils.log("Exif rotation tag: " + orientation);
 
         // See http://sylvana.net/jpegcrop/exif_orientation.html for more information about the values of the Exif Orientation Tag

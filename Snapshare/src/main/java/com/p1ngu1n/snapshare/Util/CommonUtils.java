@@ -49,12 +49,12 @@ public class CommonUtils {
     private CommonUtils() { }
 
     /**
-     * Converts the content:// scheme to the file:// scheme
+     * Converts the content:// scheme to the file path
      * @param contentResolver Provides access to the content model
      * @param contentUri The URI to be converted using content:// scheme
-     * @return The converted URI using file:// scheme
+     * @return The converted file path
      */
-    public static Uri convertContentToFileUri(ContentResolver contentResolver, Uri contentUri) {
+    public static String getPathFromContentUri(ContentResolver contentResolver, Uri contentUri) {
         String [] projection = {MediaStore.Images.Media.DATA};
         Cursor cursor = contentResolver.query(contentUri, projection, null, null, null);
 
@@ -62,12 +62,24 @@ public class CommonUtils {
             int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
             String filePath = cursor.getString(column_index);
             cursor.close();
-
-            // Convert filepath to URI
-            return Uri.fromFile(new File(filePath));
+            return filePath;
         } else {
             return null;
         }
+    }
+
+    /**
+     * Converts the content:// scheme to the file:// scheme
+     * @param contentResolver Provides access to the content model
+     * @param contentUri The URI to be converted using content:// scheme
+     * @return The converted URI using file:// scheme
+     */
+    public static Uri getFileUriFromContentUri(ContentResolver contentResolver, Uri contentUri) {
+        String filePath = getPathFromContentUri(contentResolver, contentUri);
+        if (filePath == null) {
+            return null;
+        }
+        return Uri.fromFile(new File(filePath));
     }
 
     /**

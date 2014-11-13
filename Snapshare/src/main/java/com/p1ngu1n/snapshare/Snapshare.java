@@ -46,6 +46,7 @@ import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XC_MethodReplacement;
+import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 import static de.robv.android.xposed.XposedHelpers.callMethod;
@@ -138,8 +139,13 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                             Bitmap bitmap = MediaStore.Images.Media.getBitmap(contentResolver, mediaUri);
                             XposedUtils.log("Image shared, size: " + bitmap.getWidth() + " x " + bitmap.getHeight() + " (w x h)");
 
+                            String filePath = mediaUri.getPath();
+                            if (mediaUri.getScheme().equals("content")) {
+                                filePath = CommonUtils.getPathFromContentUri(contentResolver, mediaUri);
+                                XposedBridge.log("Converted content URI to file path " + filePath);
+                            }
                             // Rotate image using EXIF-data
-                            bitmap = ImageUtils.rotateUsingExif(bitmap, mediaUri.getPath());
+                            bitmap = ImageUtils.rotateUsingExif(bitmap, filePath);
                             // Landscape images have to be rotated 90 degrees clockwise for Snapchat to be displayed correctly
                             if (Commons.ROTATION_MODE != Commons.ROTATION_NONE) {
                                 if (bitmap.getWidth() > bitmap.getHeight()) {
@@ -181,7 +187,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                             videoUri = mediaUri;
                             XposedUtils.log("Already had File URI: " + mediaUri.toString());
                         } else { // No file URI, so we have to convert it
-                            videoUri = CommonUtils.convertContentToFileUri(contentResolver, mediaUri);
+                            videoUri = CommonUtils.getFileUriFromContentUri(contentResolver, mediaUri);
                             if (videoUri != null) {
                                 XposedUtils.log("Converted content URI to file URI " + videoUri.toString());
                             } else {
