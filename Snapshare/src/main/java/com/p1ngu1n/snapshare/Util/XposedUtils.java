@@ -21,6 +21,7 @@ package com.p1ngu1n.snapshare.Util;
  * a gazillion times. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import com.p1ngu1n.snapshare.BuildConfig;
 import com.p1ngu1n.snapshare.Commons;
 
 import de.robv.android.xposed.XSharedPreferences;
@@ -30,7 +31,7 @@ import de.robv.android.xposed.XposedBridge;
  * A set of commonly used utilities using the Xposed Framework.
  */
 public class XposedUtils {
-    private static final XSharedPreferences preferences = new XSharedPreferences(Commons.PACKAGE_NAME);
+    private static final XSharedPreferences preferences = new XSharedPreferences(BuildConfig.APPLICATION_ID);
 
     /**
      * Restrict instantiation of this class, it only contains static methods.
