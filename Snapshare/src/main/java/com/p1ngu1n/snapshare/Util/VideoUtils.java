@@ -63,30 +63,23 @@ public class VideoUtils {
             if (trackBox.getMediaBox().getHandlerBox().getHandlerType().equals("vide")) {
                 videoTrackFound = true;
                 TrackHeaderBox trackHeaderBox = trackBox.getTrackHeaderBox();
+
                 // Get the dimensions of the video
                 double width = trackHeaderBox.getWidth();
                 double height = trackHeaderBox.getHeight();
                 DecimalFormat format = new DecimalFormat("#");
                 XposedUtils.log("Video resolution: " + format.format(width) + " x " + format.format(height) + " (w x h)");
 
-                // Determine the way to rotate
-                Matrix matrix;
-                if (width > height) {
-                    if (Commons.ROTATION_MODE == Commons.ROTATION_CW) {
-                        matrix = Matrix.ROTATE_90;
-                    } else {
-                        matrix = Matrix.ROTATE_270;
-                    }
-                } else {
-                    matrix = Matrix.ROTATE_0;
-                }
+                Matrix currentMatrix = trackHeaderBox.getMatrix();
+                int rotation = getDegreesFromMatrix(currentMatrix);
 
-                // No need to rotate if the rotation hasn't changed
-                if (matrix.equals(trackHeaderBox.getMatrix())) {
-                    XposedUtils.log("Keeping rotation at " + matrixToString(matrix) + ", just creating a copy");
-                    CommonUtils.copyFile(videoFile, tempFile);
-                } else {
-                    XposedUtils.log("Rotation changed from " + matrixToString(trackHeaderBox.getMatrix()) + " to " + matrixToString(matrix));
+                // Determine the way to rotate
+                if (((rotation % 180 == 90) && (width < height)) || ((rotation % 180 == 0) && (width > height))) {
+                    // Add rotation according to the settings
+                    rotation += Commons.ROTATION_MODE;
+                    Matrix matrix = getMatrixFromDegrees(rotation);
+                    XposedUtils.log("Rotation changed from " + getStringFromMatrix(currentMatrix) + " to " + getStringFromMatrix(matrix));
+
                     // Set the rotation matrix
                     trackHeaderBox.setMatrix(matrix);
                     // Write the video to the temp file
@@ -95,8 +88,10 @@ public class VideoUtils {
                     isoFile.writeContainer(fc);
                     fc.close();
                     fos.close();
+                } else { // No need to rotate if the rotation hasn't changed
+                    XposedUtils.log("Keeping rotation at " + getStringFromMatrix(currentMatrix) + ", just creating a copy");
+                    CommonUtils.copyFile(videoFile, tempFile);
                 }
-                break;
             }
         }
 
@@ -108,11 +103,46 @@ public class VideoUtils {
     }
 
     /**
-     * Get the string representation of a matrix
+     * Get the number of degrees of a matrix.
+     * @param matrix The matrix used as source
+     * @return The number of degrees
+     */
+    private static int getDegreesFromMatrix(Matrix matrix) {
+        if (matrix.equals(Matrix.ROTATE_90)) {
+            return 90;
+        } else if (matrix.equals(Matrix.ROTATE_180)) {
+            return 180;
+        } else if (matrix.equals(Matrix.ROTATE_270)) {
+            return 270;
+        } else {
+            return 0;
+        }
+    }
+
+    /**
+     * Get the matrix from a number of degrees
+     * @param degrees The degrees used as source
+     * @return The matrix from the number of degrees
+     */
+    private static Matrix getMatrixFromDegrees(int degrees) {
+        degrees %= 360;
+        if (degrees == 90) {
+            return Matrix.ROTATE_90;
+        } else if (degrees == 180) {
+            return Matrix.ROTATE_180;
+        } else if (degrees == 270) {
+            return Matrix.ROTATE_270;
+        } else {
+            return Matrix.ROTATE_0;
+        }
+    }
+
+    /**
+     * Get the string representation of a matrix.
      * @param matrix The matrix used as source
      * @return The string formatted as [degrees]°
      */
-    private static String matrixToString(Matrix matrix) {
+    private static String getStringFromMatrix(Matrix matrix) {
         if (matrix.equals(Matrix.ROTATE_0)) {
             return "0°";
         } else if (matrix.equals(Matrix.ROTATE_90)) {
