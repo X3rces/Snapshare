@@ -21,6 +21,7 @@ package com.p1ngu1n.snapshare;
  * a gazillion times. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import android.content.Context;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 
@@ -30,10 +31,11 @@ import android.preference.PreferenceFragment;
  */
 public class DeveloperSettingsFragment extends PreferenceFragment {
 
+    @SuppressWarnings("deprecation")
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getPreferenceManager().setSharedPreferencesMode(1);
+        getPreferenceManager().setSharedPreferencesMode(Context.MODE_WORLD_READABLE);
         addPreferencesFromResource(R.xml.developer_settings);
     }
 }

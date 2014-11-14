@@ -46,7 +46,6 @@ import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XC_MethodReplacement;
-import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 import static de.robv.android.xposed.XposedHelpers.callMethod;
@@ -142,7 +141,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                             String filePath = mediaUri.getPath();
                             if (mediaUri.getScheme().equals("content")) {
                                 filePath = CommonUtils.getPathFromContentUri(contentResolver, mediaUri);
-                                XposedBridge.log("Converted content URI to file path " + filePath);
+                                XposedUtils.log("Converted content URI to file path " + filePath);
                             }
                             // Rotate image using EXIF-data
                             bitmap = ImageUtils.rotateUsingExif(bitmap, filePath);
