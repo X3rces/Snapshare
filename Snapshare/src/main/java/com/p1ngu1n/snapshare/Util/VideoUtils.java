@@ -92,6 +92,7 @@ public class VideoUtils {
                     XposedUtils.log("Keeping rotation at " + getStringFromMatrix(currentMatrix) + ", just creating a copy");
                     CommonUtils.copyFile(videoFile, tempFile);
                 }
+                break;
             }
         }
 
