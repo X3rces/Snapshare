@@ -36,8 +36,8 @@ public enum Obfuscator {
     // com.snapchat.android.model.Snapbryo.Builder
     CREATE_SNAPBRYO (new String[] {null, null, null, "a", "a", "a", "a", "a", "a", "a"});
 
-    // com.snapchat.android.camera.Camera(Preview)Fragment
-    // Called from onReady event, which is called from
+    // com.snapchat.android.camera.CameraFragment
+    // Called from onReady event, used since 5.0.36.0
     public static final String CAMERA_STATE_EVENT = "onCameraStateEvent";
 
     public static final int FOUR_20 = 0;
@@ -50,6 +50,7 @@ public enum Obfuscator {
     public static final int FIVE_ZERO_TWENTYTHREE = 7;
     public static final int FIVE_ZERO_THIRTYTWO = 8;
     public static final int FIVE_ZERO_THIRTYSIX = 9;
+    public static final int EIGHT_ONE_ZERO = 10;
 
     private final String[] v;
 
@@ -63,11 +64,17 @@ public enum Obfuscator {
      * @return the actual method name
      */
     public String getValue(int version) {
+        if (version == EIGHT_ONE_ZERO) {
+            version = FIVE_ZERO_THIRTYSIX;
+        }
         return this.v[version];
     }
 
     public static int getVersion(int version) {
-        if (version >= 420) {
+        if (version >= 454) {
+            return Obfuscator.EIGHT_ONE_ZERO;
+        }
+        else if (version >= 420) {
             return Obfuscator.FIVE_ZERO_THIRTYSIX;
         }
         else if (version >= 352) {

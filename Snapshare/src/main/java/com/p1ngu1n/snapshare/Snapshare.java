@@ -33,7 +33,9 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.InputFilter;
 import android.webkit.URLUtil;
+import android.widget.EditText;
 
 import com.p1ngu1n.snapshare.Util.CommonUtils;
 import com.p1ngu1n.snapshare.Util.ImageUtils;
@@ -48,11 +50,13 @@ import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XC_MethodReplacement;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
+import static de.robv.android.xposed.XposedBridge.hookAllConstructors;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
 import static de.robv.android.xposed.XposedHelpers.callStaticMethod;
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.newInstance;
+import static de.robv.android.xposed.XposedHelpers.setObjectField;
 
 public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit {
 
@@ -74,7 +78,7 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
     @Override
     public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
         // Set isModuleEnabled to true for detection whether Snapshare is enabled
-        if (lpparam.packageName.equals(BuildConfig.PACKAGE_NAME)) {
+        if (lpparam.packageName.equals(BuildConfig.APPLICATION_ID)) {
             findAndHookMethod("com.p1ngu1n.snapshare.Util.CommonUtils", lpparam.classLoader, "isModuleEnabled", XC_MethodReplacement.returnConstant(true));
         }
 
@@ -245,8 +249,10 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
         XC_MethodHook cameraLoadedHook = new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                if (initializedUri == null)
+                XposedUtils.refreshPreferences(); // Refresh preferences for captions
+                if (initializedUri == null) {
                     return; // We don't have an image to send, so don't try to send one
+                }
 
                 XposedUtils.log("Doing it's magic!");
                 Object snapCaptureEvent;
@@ -282,6 +288,35 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
             XposedUtils.log("Hooked refreshFlashButton");
         }
 
+        // VanillaCaptionEditText was moved from an inner-class to a separate class in 8.1.0
+        String vanillaCaptionEditTextClassName = "com.snapchat.android.ui." + (snapchatVersion < Obfuscator.EIGHT_ONE_ZERO ? "VanillaCaptionView$VanillaCaptionEditText" : "caption.VanillaCaptionEditText");
+        hookAllConstructors(findClass(vanillaCaptionEditTextClassName, lpparam.classLoader), new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                if (Commons.CAPTION_UNLIMITED_VANILLA) {
+                    XposedUtils.log("Unlimited vanilla captions");
+                    EditText vanillaCaptionEditText = (EditText) param.thisObject;
+                    // Set single lines mode to false
+                    vanillaCaptionEditText.setSingleLine(false);
+                    // Set the text change listeners list to null
+                    setObjectField(vanillaCaptionEditText, "mListeners", null);
+                }
+            }
+        });
+
+        // FatCaptionEditText was moved from an inner-class to a separate class in 8.1.0
+        String fatCaptionEditTextClassName = "com.snapchat.android.ui." + (snapchatVersion < Obfuscator.EIGHT_ONE_ZERO ? "FatCaptionView$FatCaptionEditText" : "caption.FatCaptionEditText");
+        hookAllConstructors(findClass(fatCaptionEditTextClassName, lpparam.classLoader), new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                if (Commons.CAPTION_UNLIMITED_FAT) {
+                    XposedUtils.log("Unlimited fat captions");
+                    EditText fatCaptionEditText = (EditText) param.thisObject;
+                    // Remove InputFilter with character limit
+                    fatCaptionEditText.setFilters(new InputFilter[0]);
+                }
+            }
+        });
 
         // Enable Snapchat's internal debugging class
         if (Commons.TIMBER) {

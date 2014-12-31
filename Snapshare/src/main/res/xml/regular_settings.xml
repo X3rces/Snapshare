@@ -19,6 +19,26 @@
             android:title="@string/pref_adjustment_title" />
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="@string/pref_caption">
+        <Preference
+            android:key="pref_caption_explanation"
+            android:summary="@string/pref_caption_explanation" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_caption_unlimited_vanilla"
+            android:summaryOff="@string/pref_caption_unlimited_vanilla_off"
+            android:summaryOn="@string/pref_caption_unlimited_vanilla_on"
+            android:title="@string/pref_caption_unlimited_vanilla_title" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_caption_unlimited_fat"
+            android:summaryOff="@string/pref_caption_unlimited_fat_off"
+            android:summaryOn="@string/pref_caption_unlimited_fat_on"
+            android:title="@string/pref_caption_unlimited_fat_title" />
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="@string/pref_other">
         <CheckBoxPreference
             android:defaultValue="true"

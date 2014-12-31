@@ -31,7 +31,7 @@ import de.robv.android.xposed.XposedBridge;
  * A set of commonly used utilities using the Xposed Framework.
  */
 public class XposedUtils {
-    private static final XSharedPreferences preferences = new XSharedPreferences(BuildConfig.APPLICATION_ID);
+    private static XSharedPreferences preferences;
 
     /**
      * Restrict instantiation of this class, it only contains static methods.
@@ -42,12 +42,26 @@ public class XposedUtils {
      * Refreshes preferences
      */
     public static void refreshPreferences() {
-        preferences.reload();
-        Commons.ROTATION_MODE = Integer.parseInt(preferences.getString("pref_rotation", Integer.toString(Commons.ROTATION_MODE)));
-        Commons.ADJUST_METHOD = Integer.parseInt(preferences.getString("pref_adjustment", Integer.toString(Commons.ADJUST_METHOD)));
-        Commons.DEBUGGING = preferences.getBoolean("pref_debug", Commons.DEBUGGING);
-        Commons.CHECK_SIZE = !preferences.getBoolean("pref_size_disabled", !Commons.CHECK_SIZE);
-        Commons.TIMBER = preferences.getBoolean("pref_timber", Commons.TIMBER);
+        boolean prefsChanged = false;
+        if (preferences == null) {
+            preferences = new XSharedPreferences(BuildConfig.APPLICATION_ID);
+            prefsChanged = true;
+        } else if (preferences.hasFileChanged()) {
+            XposedUtils.log("Preferences have changed");
+            preferences.reload();
+            prefsChanged = true;
+        }
+
+        if (prefsChanged) {
+            preferences.reload();
+            Commons.ROTATION_MODE = Integer.parseInt(preferences.getString("pref_rotation", Integer.toString(Commons.ROTATION_MODE)));
+            Commons.ADJUST_METHOD = Integer.parseInt(preferences.getString("pref_adjustment", Integer.toString(Commons.ADJUST_METHOD)));
+            Commons.CAPTION_UNLIMITED_VANILLA = preferences.getBoolean("pref_caption_unlimited_vanilla", Commons.CAPTION_UNLIMITED_VANILLA);
+            Commons.CAPTION_UNLIMITED_FAT = preferences.getBoolean("pref_caption_unlimited_fat", Commons.CAPTION_UNLIMITED_FAT);
+            Commons.DEBUGGING = preferences.getBoolean("pref_debug", Commons.DEBUGGING);
+            Commons.CHECK_SIZE = !preferences.getBoolean("pref_size_disabled", !Commons.CHECK_SIZE);
+            Commons.TIMBER = preferences.getBoolean("pref_timber", Commons.TIMBER);
+        }
     }
 
 

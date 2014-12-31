@@ -48,6 +48,18 @@
         <item>2</item>
     </string-array>
 
+    <!-- Caption settings -->
+    <string name="pref_caption">Captions</string>
+    <string name="pref_caption_explanation">Note: unlimited captions works for BOTH snaps taken with Snapchat\'s camera and snaps shared with Snapshare, so it\'s NOT limited to shared snaps.</string>
+
+    <string name="pref_caption_unlimited_vanilla_title">Unlimited regular captions</string>
+    <string name="pref_caption_unlimited_vanilla_on">Regular captions are unlimited</string>
+    <string name="pref_caption_unlimited_vanilla_off">Regular captions are only one line</string>
+
+    <string name="pref_caption_unlimited_fat_title">Unlimited fat captions</string>
+    <string name="pref_caption_unlimited_fat_on">Fat captions are unlimited</string>
+    <string name="pref_caption_unlimited_fat_off">Fat captions are 33 characters maximum</string>
+
     <!-- Other settings -->
     <string name="pref_other">Other</string>
 

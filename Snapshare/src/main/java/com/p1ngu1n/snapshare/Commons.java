@@ -42,6 +42,8 @@ public class Commons {
     // Preferences and their default values
     public static int ROTATION_MODE = ROTATION_CW;
     public static int ADJUST_METHOD = ADJUST_CROP;
+    public static boolean CAPTION_UNLIMITED_VANILLA = false;
+    public static boolean CAPTION_UNLIMITED_FAT = false;
     public static boolean DEBUGGING = false;
     public static boolean CHECK_SIZE = true;
     public static boolean TIMBER = false;
