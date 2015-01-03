@@ -34,6 +34,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.InputFilter;
+import android.view.inputmethod.EditorInfo;
 import android.webkit.URLUtil;
 import android.widget.EditText;
 
@@ -298,7 +299,12 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                     EditText vanillaCaptionEditText = (EditText) param.thisObject;
                     // Set single lines mode to false
                     vanillaCaptionEditText.setSingleLine(false);
-                    // Set the text change listeners list to null
+
+                    // Remove actionDone IME option, by only setting flagNoExtractUi
+                    vanillaCaptionEditText.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
+                    // Remove listener hiding keyboard when enter is pressed by setting the listener to null
+                    vanillaCaptionEditText.setOnEditorActionListener(null);
+                    // Remove listener for cutting of text when the first line is full by setting the text change listeners list to null
                     setObjectField(vanillaCaptionEditText, "mListeners", null);
                 }
             }
@@ -314,6 +320,13 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                     EditText fatCaptionEditText = (EditText) param.thisObject;
                     // Remove InputFilter with character limit
                     fatCaptionEditText.setFilters(new InputFilter[0]);
+
+                    // Remove actionDone IME option, by only setting flagNoExtractUi
+                    fatCaptionEditText.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
+                    // Remove listener hiding keyboard when enter is pressed by setting the listener to null
+                    fatCaptionEditText.setOnEditorActionListener(null);
+                    // Remove listener for removing new lines by setting the text change listeners list to null
+                    setObjectField(fatCaptionEditText, "mListeners", null);
                 }
             }
         });
