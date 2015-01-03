@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 19
-    buildToolsVersion '21.1.1'
+    buildToolsVersion '21.1.2'
 
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion 19
-        versionCode 23
-        versionName "2.5.0"
+        versionCode 24
+        versionName "2.5.1"
     }
 }
 
@@ -18,5 +18,5 @@ repositories {
 
 dependencies {
     provided files('libs/XposedBridgeApi-54.jar')
-    compile 'com.googlecode.mp4parser:isoparser:1.0.2'
+    compile 'com.googlecode.mp4parser:isoparser:1.0.5.4'
 }
