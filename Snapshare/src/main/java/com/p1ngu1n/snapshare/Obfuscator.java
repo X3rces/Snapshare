@@ -72,37 +72,37 @@ public enum Obfuscator {
 
     public static int getVersion(int version) {
         if (version >= 454) {
-            return Obfuscator.EIGHT_ONE_ZERO;
+            return EIGHT_ONE_ZERO;
         }
         else if (version >= 420) {
-            return Obfuscator.FIVE_ZERO_THIRTYSIX;
+            return FIVE_ZERO_THIRTYSIX;
         }
         else if (version >= 352) {
-            return Obfuscator.FIVE_ZERO_THIRTYTWO;
+            return FIVE_ZERO_THIRTYTWO;
         }
         else if (version >= 323) {
-            return Obfuscator.FIVE_ZERO_TWENTYTHREE;
+            return FIVE_ZERO_TWENTYTHREE;
         }
         else if (version >= 298) {
-            return Obfuscator.FIVE_ZERO_NINE;
+            return FIVE_ZERO_NINE;
         }
         else if (version >= 274) {
-            return Obfuscator.FIVE_ZERO_TWO;
+            return FIVE_ZERO_TWO;
         }
         else if (version >= 222) {
-            return Obfuscator.FOUR_ONE_TWELVE;
+            return FOUR_ONE_TWELVE;
         }
         else if (version >= 218) {
-            return Obfuscator.FOUR_ONE_TEN;
+            return FOUR_ONE_TEN;
         }
         else if (version >= 181) {
-            return Obfuscator.FOUR_22;
+            return FOUR_22;
         }
         else if (version >= 175) {
-            return Obfuscator.FOUR_21;
+            return FOUR_21;
         }
         else { // version < 175
-            return Obfuscator.FOUR_20;
+            return FOUR_20;
         }
     }
 }
