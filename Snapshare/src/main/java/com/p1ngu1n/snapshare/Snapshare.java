@@ -336,12 +336,23 @@ public class Snapshare implements IXposedHookLoadPackage, IXposedHookZygoteInit 
             XposedUtils.log("Timber enabled");
             Class<?> timberClass = findClass("com.snapchat.android.Timber", lpparam.classLoader);
             Class<?> releaseManagerClass = findClass("com.snapchat.android.util.debug.ReleaseManager", lpparam.classLoader);
+            Class<?> logTypeClass = findClass("com.snapchat.android.Timber.LogType", lpparam.classLoader);
             // Return true when checking whether it should debug
+            findAndHookMethod(releaseManagerClass, "b", XC_MethodReplacement.returnConstant(true));
+            findAndHookMethod(releaseManagerClass, "c", XC_MethodReplacement.returnConstant(true));
             findAndHookMethod(releaseManagerClass, "d", XC_MethodReplacement.returnConstant(true));
             findAndHookMethod(releaseManagerClass, "e", XC_MethodReplacement.returnConstant(true));
             findAndHookMethod(releaseManagerClass, "f", XC_MethodReplacement.returnConstant(true));
+            findAndHookMethod(releaseManagerClass, "g", XC_MethodReplacement.returnConstant(true));
+            findAndHookMethod(releaseManagerClass, "h", XC_MethodReplacement.returnConstant(true));
             // Usually returns the class name to use as the Log Tag, however we want a custom one
-            findAndHookMethod(timberClass, "a", XC_MethodReplacement.returnConstant("SnapchatTimber"));
+            findAndHookMethod(timberClass, "a", logTypeClass, String.class, boolean.class, Throwable.class, String.class, Object[].class, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    String logTag = (String) param.args[1];
+                    param.args[1] = "Timber_" + logTag;
+                }
+            });
         }
     }
 
